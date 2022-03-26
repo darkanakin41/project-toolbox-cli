@@ -1,4 +1,7 @@
 import simpleGit from 'simple-git';
+import fs from 'fs'
+import path from 'path'
+import { table } from 'console';
 
 export namespace Git {
   const toReplace: { [key: string]: string } = {
@@ -74,6 +77,21 @@ export namespace Git {
       default:
         return null
     }
+  }
+
+  export const isFileIgnored = (workdir: string, file: string): boolean => {
+    const fileContent = fs.readFileSync(path.join(workdir, '.gitignore'), 'utf8');
+    return fileContent.split('\n').indexOf(file) !== -1
+  }
+
+  export const addToGitignore = (workdir: string, file: string): void => {
+    if(isFileIgnored(workdir, file)){
+      return
+    }
+    const fileContent = fs.readFileSync(path.join(workdir, '.gitignore'), 'utf8');
+    const rows = fileContent.split('\n')
+    rows.push(file)
+    fs.writeFileSync(path.join(workdir, '.gitignore'), rows.join('\n'));
   }
 }
 

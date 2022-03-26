@@ -4,15 +4,19 @@ import path from 'path'
 const excluded = [
   'node_modules',
   'vendor',
+  'var',
+  'bundles',
 ]
 
 export namespace File {
-
-  export function isExcluded(path: string): boolean {
+  function isExcludedPattern(toCheck: string, excludedPatterns: string[]): boolean{
+    if(excludedPatterns.length === 0){
+      return false
+    }
     let isExcluded = false;
-    excluded.forEach((pattern:string) => {
+    excludedPatterns.forEach((pattern:string) => {
       const regex = new RegExp(pattern)
-      if(regex.test(path)) {
+      if(regex.test(toCheck)) {
         isExcluded = true
       }
     })
@@ -24,7 +28,7 @@ export namespace File {
     files.forEach((file, index) => {
       files[index] = path.join(dir, file)
     })
-    
+
     const regex = new RegExp(pattern)
     return files.filter((file) => {
       const stat = fs.statSync(file)
@@ -32,7 +36,7 @@ export namespace File {
     })
   }
 
-  export function findAllFilesRecursive (dir: string, pattern: string): string[] {
+  export function findAllFilesRecursive (dir: string, pattern: string, excludedPatterns: string[] = []): string[] {
     const files: string[] = fs.readdirSync(dir)
     files.forEach((file, index) => {
       files[index] = path.join(dir, file)
@@ -41,7 +45,7 @@ export namespace File {
     files.forEach((file:string) => {
       const stat = fs.statSync(file)
       if (stat.isDirectory()) {
-        if (!isExcluded(file)) {
+        if (!isExcludedPattern(file, excluded)) {
           subfolders.push(file)
         }
       }
@@ -55,7 +59,7 @@ export namespace File {
     const regex = new RegExp(pattern)
     return files.filter((file) => {
       const stat = fs.statSync(file)
-      return !stat.isDirectory() && regex.test(file)
+      return !stat.isDirectory() && regex.test(path.basename(file)) && !isExcludedPattern(path.basename(file), excludedPatterns)
     })
   }
 }

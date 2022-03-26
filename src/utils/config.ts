@@ -99,16 +99,19 @@ export module ConfigManager {
         const folder = getProjectRoot()
         const ddb = File.findAllFiles(folder, 'ddb\\.ya?ml')[0]
         if (ddb) {
+            console.log(`[ddb] using "${ddb}" configuration file`)
             loadConfigurationFile(ddb, configuration)
         }
 
         const ddbLocal = File.findAllFiles(folder, 'ddb\\.local\\.ya?ml')[0]
         if (ddbLocal) {
+            console.log(`[ddb] using "${ddbLocal}" configuration file`)
             loadConfigurationFile(ddbLocal, configuration)
         }
 
         const ddbEnv = File.findAllFiles(folder, `ddb\\.${configuration.core.env.current}\\.ya?ml`)[0]
         if (ddbEnv) {
+            console.log(`[ddb] using "${ddbEnv}" configuration file`)
             loadConfigurationFile(ddbEnv, configuration)
         }
         return configuration
