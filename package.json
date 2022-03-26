@@ -8,7 +8,6 @@
   "scripts": {
     "build": "npx tsc",
     "package": "npm run build && pkg . --public-packages '*' --output pkg/dt",
-    "install": "npm run build && npm install -g .",
     "lint": "prettier --c ./src/**/*.ts",
     "prettify": "prettier --write ./src/**/*.ts"
   },
