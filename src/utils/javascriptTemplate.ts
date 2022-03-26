@@ -1,9 +1,10 @@
 import { DockerCompose, DockerComposeService, DockerComposeVirtualHost } from '../model/DockerCompose';
+import Configuration from '../model/Configuration';
 
 class JavascriptTemplateTools {
-  private data: any;
+  private data: Configuration;
 
-  constructor(data: any) {
+  constructor(data: Configuration) {
     this.data = data;
   }
 
@@ -78,7 +79,7 @@ class JavascriptTemplateTools {
     }
 
     service.build = {
-      context: `${this.data.docker.build.base_directory}/${service.buildImage}`,
+      context: `${this.data.docker.build.baseDirectory}/${service.buildImage}`,
     };
 
     delete service['buildImage'];
@@ -128,6 +129,7 @@ class JavascriptTemplateTools {
       'traefik.enabled': 'true',
     };
 
+    // @ts-ignore
     const projectNameFormated = this.data.project.name.replace(/[^a-zA-Z0-9]/g, '-');
 
     const redirectToHttps = this.data.reverseProxy.redirectToHttps ?? false;
@@ -162,7 +164,7 @@ class JavascriptTemplateTools {
 }
 
 export module JavascriptTemplate {
-  export function process(template: string, data: any): string {
+  export function process(template: string, data: Configuration): string {
     // noinspection JSUnusedLocalSymbols
     const JST = new JavascriptTemplateTools(data);
     return eval(template);

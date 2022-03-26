@@ -1,7 +1,7 @@
 docker:
     restart: unless-stopped
-project:
-    name: "scoopturn.com"
+env:
+    current: prod
 reverseProxy:
     redirectToHttps: true
     tls: true

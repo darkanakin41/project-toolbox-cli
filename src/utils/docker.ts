@@ -10,11 +10,6 @@ export namespace Docker {
       return true
     }
     return fs.existsSync(dockerCompose);
-
-  }
-  export function isDdbized (workdir: string): boolean {
-    let dockerComposeJsonnet = path.join(workdir, 'docker-compose.yml.jsonnet')
-    return fs.existsSync(dockerComposeJsonnet);
   }
 }
 
