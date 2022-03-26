@@ -8,6 +8,7 @@
     "skipLibCheck": true,
     "outDir": "./build",
     "importHelpers": false,
+    "allowJs": true,
     "typeRoots": [
       "./node_modules/@types",
       "./types"

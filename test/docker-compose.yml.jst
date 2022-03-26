@@ -1,0 +1,100 @@
+if (JST === undefined) {
+  JST = {}
+}
+
+const dbUser = 'scoopturn'
+const dbPassword = 'scoopturn'
+const dbName = 'scoopturn'
+
+const workdir = '/var/www/html'
+
+const jstResult = {
+  services: {
+    db: {
+      image: 'mariadb',
+      applyUser: true,
+      binaries: {
+        mysql: {
+          workdir: workdir,
+          command: `mysql  -hdb -u ${dbUser} -p${dbPassword} ${dbName}`
+        }
+      },
+      environment: {
+        MYSQL_ROOT_PASSWORD: dbPassword,
+        MYSQL_DATABASE: dbUser,
+        MYSQL_USER: dbUser,
+        MYSQL_PASSWORD: dbPassword
+      },
+      ports: JST.isEnv('dev') ? [JST.prefixPort('3306')] : [],
+      volumes: [
+        "./.docker-data/db-data:/var/lib/mysql:rw",
+        `./:${workdir}`
+      ]
+    },
+    php: {
+      buildImage: 'php',
+      applyUser: true,
+      depends_on: ['db'],
+      binaries: {
+        symfony: {
+          workdir: workdir,
+          command: 'symfony'
+        },
+        composer: {
+          workdir: workdir,
+          command: 'composer'
+        },
+        php: {
+          workdir: workdir,
+          command: 'php'
+        },
+      },
+      volumes: [
+        "./.docker-data/php-composer-cache:/composer/cache:rw",
+        "./.docker-data/php-composer-vendor:/composer/vendor:rw",
+        `./:${workdir}` + ":rw",
+        "./.docker/php/php-config.ini:/usr/local/etc/php/conf.d/php-config.ini"
+      ]
+    },
+    web: {
+      image: 'nginx:alpine',
+      depends_on: ['php'],
+      virtualHosts: [
+        { port: 80, domain: JST.buildDomain(), name: 'app'},
+        !JST.isEnv('dev') ? { port: 80, domain: JST.buildDomain('admin'), name: 'admin'} : null,
+      ],
+      volumes: [
+        "./.docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf:rw",
+        "./:/var/www/html:rw"
+      ]
+    },
+    node: {
+      buildImage: 'node',
+      applyUser: true,
+      binaries: {
+        npm: {
+          workdir: workdir,
+          command: 'npm'
+        },
+        npx: {
+          workdir: workdir,
+          command: 'npx'
+        },
+        vue: {
+          workdir: workdir,
+          command: 'vue'
+        },
+      },
+      virtualHosts: [
+        JST.isEnv('dev') ? { port: 8080, domain: JST.buildDomain('admin'), name: 'admin'} : null,
+      ],
+      volumes: [
+        `./:${workdir}:rw`,
+        "./.docker-data/node-cache:/home/node/.cache:rw",
+        "./.docker-data/node-npm-packages:/home/node/.npm-packages:rw"
+      ]
+    }
+  }
+}
+
+JST.compose(jstResult)

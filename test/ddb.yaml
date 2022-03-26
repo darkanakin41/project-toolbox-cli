@@ -1,0 +1,8 @@
+docker:
+    restart: unless-stopped
+project:
+    name: "scoopturn.com"
+reverseProxy:
+    redirectToHttps: true
+    tls: true
+    certResolver: "letsencrypt"
