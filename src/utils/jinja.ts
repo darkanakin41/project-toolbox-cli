@@ -1,3 +1,1 @@
-export namespace JinjaTools {
-
-}
+export namespace JinjaTools {}

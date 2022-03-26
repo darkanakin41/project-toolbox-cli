@@ -8,7 +8,9 @@
   "scripts": {
     "build": "npx tsc",
     "package": "npm run build && pkg . --public-packages '*' --output pkg/dt",
-    "install": "npm run build && npm install -g ."
+    "install": "npm run build && npm install -g .",
+    "lint": "prettier --c ./src/**/*.ts",
+    "prettify": "prettier --write ./src/**/*.ts"
   },
   "bin": {
     "pt": "./build/index.js",
@@ -30,6 +32,7 @@
     "cmake-js": "^6.3.0",
     "pkg": "^5.5.2",
     "prettier": "^2.6.1",
+    "tslint": "^6.1.3",
     "typescript": "^4.6.3"
   },
   "pkg": {
