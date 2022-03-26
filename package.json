@@ -7,7 +7,8 @@
   "license": "ISC",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "npx tsc"
+    "build": "npx tsc",
+    "package": "pkg . --public-packages '*' --output pkg/dt"
   },
   "bin": {
     "pt": "./build/index.js",
@@ -16,11 +17,9 @@
   "dependencies": {
     "@hanazuki/node-jsonnet": "^1.0.0",
     "@types/jsonnet": "^0.0.5",
-    "chalk": "^5.0.1",
     "glob": "^7.2.0",
     "jinja-js": "^0.1.8",
     "lodash": "^4.17.21",
-    "open": "^8.4.0",
     "simple-git": "^3.4.0",
     "yaml": "2.0.0-11",
     "yargs": "^17.4.0"
@@ -31,7 +30,19 @@
     "@types/node": "^17.0.23",
     "@types/yargs": "^17.0.10",
     "cmake-js": "^6.3.0",
+    "pkg": "^5.5.2",
     "prettier": "^2.6.1",
     "typescript": "^4.6.3"
+  },
+  "pkg": {
+    "scripts": [
+      "build/**/*.js",
+      "node_modules/@hanazuki/node-jsonnet/**/*.node"
+    ],
+    "targets": [
+      "node16-linux",
+      "node16-macos",
+      "node16-win"
+    ]
   }
 }

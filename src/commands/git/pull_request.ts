@@ -1,6 +1,5 @@
 import { Arguments, Options } from 'yargs'
 import path from 'path'
-import open from 'open'
 import { Git } from '../../utils/git'
 
 export const command: string = 'pull-request'
@@ -26,7 +25,7 @@ export const handler = async (argv: Arguments<Options>): Promise<void> => {
   }
   if (url) {
     console.log(`[git] ${projectName}: opening pull request page in browser`)
-    open(url)
+    console.log(open)
   } else {
     console.error(`[git] ${projectName}: not url found`)
   }
