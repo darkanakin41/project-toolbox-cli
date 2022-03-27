@@ -1,11 +1,9 @@
 import fs from 'fs';
 import { File } from '../../utils/file';
-import yaml from 'js-yaml';
 import jinja from 'jinja-js';
 import { ConfigManager } from '../../utils/config';
 import { Git } from '../../utils/git';
 import { JavascriptTemplate } from '../../utils/javascriptTemplate';
-import { jsYamlConfiguration } from '../../config/js-yaml';
 import { Logger } from '../../utils/logger';
 
 export const command: string = 'generate';
@@ -23,7 +21,7 @@ export const handler = async (): Promise<void> => {
     const targetFilename = file.replace('.jst', '');
     const fileContent = fs.readFileSync(file, 'utf8');
 
-    fs.writeFileSync(targetFilename, yaml.dump(JavascriptTemplate.process(fileContent, data), jsYamlConfiguration));
+    fs.writeFileSync(targetFilename, JavascriptTemplate.process(fileContent, data));
     Git.addToGitignore(data.project.root, targetFilename.replace(data.project.root, ''));
 
     Logger.success(`[templates] converted "${file.replace(data.project.root, '')}" to "${targetFilename.replace(data.project.root, '')}"`);

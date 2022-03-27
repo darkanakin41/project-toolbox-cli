@@ -1,6 +1,9 @@
-import { DockerCompose, DockerComposeBinary, DockerComposeService, DockerComposeVirtualHost } from '../model/DockerCompose';
+import yaml from 'js-yaml';
+import { jsYamlConfiguration } from '../config/js-yaml';
 import Configuration from '../model/Configuration';
+import { DockerCompose, DockerComposeBinary, DockerComposeService, DockerComposeVirtualHost } from '../model/DockerCompose';
 import { BinaryManager } from './binaryManager';
+import { Logger } from './logger';
 
 class JavascriptTemplateTools {
   private data: Configuration;
@@ -45,6 +48,17 @@ class JavascriptTemplateTools {
     this.composeHandleNetworks(composeConfiguration);
 
     return composeConfiguration;
+  }
+
+  getBinaries(composeConfiguration: DockerCompose): { [key: string]: DockerComposeBinary } {
+    let binaries = {}
+
+    Object.keys(composeConfiguration.services).forEach((serviceName) => {
+      const service = composeConfiguration.services[serviceName];
+      binaries = { ...binaries, ...this.composeGetBinaries(serviceName, service) };
+    });
+
+    return binaries
   }
 
   composeAddRestart(service: DockerComposeService): void {
@@ -94,24 +108,24 @@ class JavascriptTemplateTools {
     Object.keys(service.binaries).forEach((binaryName: string) => {
       // @ts-ignore
       const config: DockerComposeBinary = service.binaries[binaryName];
-      const binaryParts = ['docker-compose'];
-
-      if (config.exec) {
-        binaryParts.push('exec');
-      } else {
-        binaryParts.push('run', '--rm');
-      }
-
-      if (config.workdir) {
-        binaryParts.push('--workdir', config.workdir);
-      }
-
-      binaryParts.push(serviceName, config.command, '"$@"');
-
+      const binaryParts = [`$(pt binary get ${binaryName})`, '"$@"'];
       BinaryManager.registerBinary(binaryName, binaryParts.join(' '));
     });
 
     delete service['binaries'];
+  }
+
+  composeGetBinaries(serviceName: string, service: DockerComposeService): { [key: string]: DockerComposeBinary } {
+    if (!service.binaries) {
+      console
+      return {};
+    }
+    Object.keys(service.binaries).forEach((binaryName: string) => {
+      // @ts-ignore
+      const config: DockerComposeBinary = service.binaries[binaryName];
+      config.serviceName = serviceName
+    })
+    return service.binaries;
   }
 
   composeHandleNetworks(composeConfiguration: DockerCompose): void {
@@ -188,6 +202,15 @@ export module JavascriptTemplate {
   export function process(template: string, data: Configuration): string {
     // noinspection JSUnusedLocalSymbols
     const JST = new JavascriptTemplateTools(data);
-    return eval(template);
+    const result = eval(template);
+    return yaml.dump(JST.compose(result), jsYamlConfiguration)
+  }
+
+  export function getBinaries(template: string, data: Configuration): { [key: string]: DockerComposeBinary } {
+    // noinspection JSUnusedLocalSymbols
+    const JST = new JavascriptTemplateTools(data);
+    const result: DockerCompose = eval(template);
+
+    return JST.getBinaries(result)
   }
 }
