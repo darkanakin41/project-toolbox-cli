@@ -125,7 +125,9 @@ class JavascriptTemplateTools {
     if (!service.virtualHosts) {
       return;
     }
-    let labels: string[] = service.labels ?? ['traefik.enabled="true"'];
+    let labels: { [key: string]: string | number | boolean } = service.labels ?? {
+      'traefik.enable': true,
+    };
 
     // @ts-ignore
     const projectNameFormated = this.data.project.name.replace(/[^a-zA-Z0-9]/g, '-');
@@ -139,26 +141,25 @@ class JavascriptTemplateTools {
         return;
       }
       const serviceName = `${projectNameFormated}-${virtualHost.name}`;
-      labels.push(`traefik.http.routers.${serviceName}.rule=Host(\`${virtualHost.domain}\`)`);
-      labels.push(`traefik.http.routers.${serviceName}.service=${serviceName}`);
-      labels.push(`traefik.http.services.${serviceName}.loadbalancer.server.port=${virtualHost.port}`);
+      labels[`traefik.http.routers.${serviceName}.rule`] = `Host(\`${virtualHost.domain}\`)`;
+      labels[`traefik.http.routers.${serviceName}.service`] = serviceName;
+      labels[`traefik.http.services.${serviceName}.loadbalancer.server.port`] = `${virtualHost.port}`;
       if (redirectToHttps) {
         const middlewareName = `${serviceName}-redirect-to-https`;
-        labels.push(`traefik.http.middlewares.${middlewareName}.redirectscheme.scheme=https`);
-        labels.push(`traefik.http.routers.${serviceName}.middlewares=middlewareName`);
+        labels[`traefik.http.middlewares.${middlewareName}.redirectscheme.scheme`] = 'https';
+        labels[`traefik.http.routers.${serviceName}.middlewares`] = middlewareName;
       }
       if (tls) {
-        labels.push(`traefik.http.routers.${serviceName}-tls.tls=true`);
+        labels[`traefik.http.routers.${serviceName}-tls.tls`] = 'true';
         if (certResolver) {
-          labels.push(`traefik.http.routers.${serviceName}-tls.tls.certresolver=certResolver`);
+          labels[`traefik.http.routers.${serviceName}-tls.tls.certresolver`] = certResolver;
         }
-        labels.push(`traefik.http.routers.${serviceName}-tls.rule=Host(\`${virtualHost.domain}\`)`);
-        labels.push(`traefik.http.routers.${serviceName}-tls.service=${serviceName}`);
+        labels[`traefik.http.routers.${serviceName}-tls.rule`] = `Host(\`${virtualHost.domain}\`)`;
+        labels[`traefik.http.routers.${serviceName}-tls.service`] = serviceName;
       }
     });
 
     service.labels = labels;
-    service.labels.sort();
   }
 }
 
