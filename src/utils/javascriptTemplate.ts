@@ -125,7 +125,7 @@ class JavascriptTemplateTools {
     if (!service.virtualHosts) {
       return;
     }
-    let labels: string[] = service.labels ?? ['traefik.enabled=true'];
+    let labels: string[] = service.labels ?? ['traefik.enabled="true"'];
 
     // @ts-ignore
     const projectNameFormated = this.data.project.name.replace(/[^a-zA-Z0-9]/g, '-');
@@ -158,6 +158,7 @@ class JavascriptTemplateTools {
     });
 
     service.labels = labels;
+    service.labels.sort();
   }
 }
 

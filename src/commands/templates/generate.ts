@@ -1,10 +1,11 @@
 import fs from 'fs';
 import { File } from '../../utils/file';
-import YAML from 'yaml';
+import yaml from 'js-yaml';
 import jinja from 'jinja-js';
 import { ConfigManager } from '../../utils/config';
 import { Git } from '../../utils/git';
 import { JavascriptTemplate } from '../../utils/javascriptTemplate';
+import { jsYamlConfiguration } from '../../config/js-yaml'
 
 export const command: string = 'generate';
 export const desc: string = 'Get the current ddb configuration';
@@ -23,9 +24,7 @@ export const handler = async (): Promise<void> => {
 
     console.log(`[templates] converting "${file.replace(data.project.root, '')}" to "${targetFilename.replace(data.project.root, '')}"`);
 
-    const doc = new YAML.Document();
-    doc.contents = JavascriptTemplate.process(fileContent, data);
-    fs.writeFileSync(targetFilename, doc.toString({ defaultStringType: 'QUOTE_SINGLE', defaultKeyType: 'PLAIN' }));
+    fs.writeFileSync(targetFilename, yaml.dump(JavascriptTemplate.process(fileContent, data), jsYamlConfiguration));
     Git.addToGitignore(data.project.root, targetFilename.replace(data.project.root, ''));
   });
 

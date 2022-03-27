@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import _ from 'lodash';
 import { File } from './file';
-import YAML from 'yaml';
+import yaml from 'js-yaml';
 import os from 'os';
 import Configuration from '../model/Configuration';
 
@@ -57,7 +57,7 @@ export module ConfigManager {
       return;
     }
     const fileContent = fs.readFileSync(file, 'utf8');
-    const yamlContent = YAML.parse(fileContent);
+    const yamlContent = yaml.load(fileContent);
     _.merge(configuration, yamlContent);
   }
 
