@@ -1,6 +1,7 @@
 import simpleGit from 'simple-git';
 import fs from 'fs';
 import path from 'path';
+import { Logger } from './logger';
 
 export namespace Git {
   const toReplace: { [key: string]: string } = {
@@ -86,6 +87,10 @@ export namespace Git {
   };
 
   export const isFileIgnored = (workdir: string, file: string): boolean => {
+    if (!fs.existsSync(path.join(workdir, '.gitignore'))) {
+      fs.writeFileSync(path.join(workdir, '.gitignore'), '');
+      Logger.info('[gitignore] Created .gitignore file');
+    }
     file = cleanFileName(file);
     const fileContent = fs.readFileSync(path.join(workdir, '.gitignore'), 'utf8');
     return fileContent.split('\n').indexOf(file) !== -1;
@@ -100,5 +105,7 @@ export namespace Git {
     const rows = fileContent.split('\n');
     rows.push(file);
     fs.writeFileSync(path.join(workdir, '.gitignore'), rows.join('\n'));
+
+    Logger.success(`[gitignore] Added ${file} to .gitignore`);
   };
 }

@@ -1,5 +1,6 @@
 import { Docker } from '../../utils/docker';
 import { ConfigManager } from '../../utils/config';
+import { Logger } from '../../utils/logger';
 
 export const command: string = 'status';
 export const desc: string = 'Get the status of the current project';
@@ -9,8 +10,8 @@ export const handler = async (): Promise<void> => {
   const projectName = data.project.name;
 
   if (Docker.isDockerized(data.project.root)) {
-    console.log(`[docker] ${projectName}: dockerized`);
+    Logger.success(`[docker] ${projectName}: dockerized`);
   } else {
-    console.error(`[docker] ${projectName}: not dockerized`);
+    Logger.error(`[docker] ${projectName}: not dockerized`);
   }
 };

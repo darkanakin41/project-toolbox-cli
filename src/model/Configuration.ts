@@ -1,11 +1,16 @@
 export default interface Configuration {
+  binary: BinaryConfiguration;
   compose: ComposeConfiguration;
+  data: { [key: string]: string | number };
   docker: DockerConfiguration;
   env: EnvConfiguration;
+  files: FilesConfiguration;
   project: ProjectConfiguration;
   reverseProxy: ReverseProxyConfiguration;
-  files: FilesConfiguration;
-  data: { [key: string]: string | number };
+}
+
+export interface BinaryConfiguration {
+  directory: '.bin';
 }
 
 export interface ComposeConfiguration {

@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import path from 'path';
 import { ConfigManager } from './config';
+import { Logger } from './logger';
 
 const excluded = ['node_modules', 'vendor', 'var', 'bundles', '.idea', '.github', '.git', 'cache', '.vscode'];
 
@@ -42,7 +43,7 @@ export namespace File {
   }
 
   export function findAllFilesRecursive(dir: string, pattern: string, excludedPatterns: string[] = []): string[] {
-    // console.log(`Searching for files matching "${pattern} in ${dir}`);
+    Logger.debug(`Searching for files matching "${pattern} in ${dir}`);
     const excludedFolders = [...excluded, ...ConfigManager.getConfiguration().files.ignoredFolders];
     const files: string[] = fs.readdirSync(dir);
     files.forEach((file, index) => {

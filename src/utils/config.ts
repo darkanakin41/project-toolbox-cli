@@ -5,12 +5,16 @@ import { File } from './file';
 import yaml from 'js-yaml';
 import os from 'os';
 import Configuration from '../model/Configuration';
+import { Logger } from './logger';
 
 export module ConfigManager {
   const userInfo = os.userInfo();
 
   let calculatedConfiguration: Configuration | null = null;
   const defaultConfig: Configuration = {
+    binary: {
+      directory: '.bin',
+    },
     compose: {
       network_name: 'default',
       version: '3.7',
@@ -73,8 +77,8 @@ export module ConfigManager {
         return folder;
       }
     }
-    console.error('project-toolbox not configured, please create a pt.yaml at root folder of your project');
-    process.exit(1);
+    Logger.error(`project-toolbox not configured, please create a pt.yaml at root folder of your project`, true);
+    return '';
   };
 
   export const getConfiguration = () => {
@@ -85,7 +89,7 @@ export module ConfigManager {
 
     const home = File.findAllFiles(userInfo.homedir, '\\.pt\\.yaml')[0];
     if (home) {
-      console.log(`using "${home}" configuration file`);
+      Logger.debug(`using "${home}" configuration file`);
       loadConfigurationFile(home, configuration);
     }
 
@@ -93,20 +97,20 @@ export module ConfigManager {
     configuration.project.name = path.parse(configuration.project.root).base;
     const main = File.findAllFiles(configuration.project.root, 'pt\\.yaml')[0];
     if (main) {
-      console.log(`using "${main.replace(getProjectRoot(), '')}" configuration file`);
+      Logger.debug(`using "${main.replace(getProjectRoot(), '')}" configuration file`);
       loadConfigurationFile(main, configuration);
       configuration.reverseProxy.domain.sub = configuration.project.name.replace(/[^a-zA-Z0-9]/g, '-');
     }
 
     const local = File.findAllFiles(configuration.project.root, 'pt\\.local\\.ya?ml')[0];
     if (local) {
-      console.log(`using "${local.replace(getProjectRoot(), '')}" configuration file`);
+      Logger.debug(`using "${local.replace(getProjectRoot(), '')}" configuration file`);
       loadConfigurationFile(local, configuration);
     }
 
     const environment = File.findAllFiles(configuration.project.root, `pt\\.${configuration.env.current}\\.ya?ml`)[0];
     if (environment) {
-      console.log(`using "${environment.replace(getProjectRoot(), '')}" configuration file`);
+      Logger.debug(`using "${environment.replace(getProjectRoot(), '')}" configuration file`);
       loadConfigurationFile(environment, configuration);
     }
     calculatedConfiguration = configuration;
