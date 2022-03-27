@@ -36,7 +36,8 @@ export interface DockerComposeServiceBuild {
 
 export interface DockerComposeBinary {
   workdir?: string;
-  command?: string;
+  command: string;
+  exec?: boolean;
 }
 
 export interface DockerComposeVirtualHost {

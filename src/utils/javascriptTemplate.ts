@@ -1,5 +1,6 @@
-import { DockerCompose, DockerComposeService, DockerComposeVirtualHost } from '../model/DockerCompose';
+import { DockerCompose, DockerComposeBinary, DockerComposeService, DockerComposeVirtualHost } from '../model/DockerCompose';
 import Configuration from '../model/Configuration';
+import { BinaryManager } from './binaryManager';
 
 class JavascriptTemplateTools {
   private data: Configuration;
@@ -35,7 +36,7 @@ class JavascriptTemplateTools {
       const service = composeConfiguration.services[serviceName];
       this.composeAddRestart(service);
       this.composeAddInit(service);
-      this.composeHandleBinaries(service);
+      this.composeHandleBinaries(serviceName, service);
       this.composeHandleBuildImage(service);
       this.composeHandleUser(service);
       this.composeHandleVirtualHost(service);
@@ -85,10 +86,30 @@ class JavascriptTemplateTools {
     delete service['buildImage'];
   }
 
-  composeHandleBinaries(service: DockerComposeService): void {
+  composeHandleBinaries(serviceName: string, service: DockerComposeService): void {
     if (!service.binaries) {
       return;
     }
+
+    Object.keys(service.binaries).forEach((binaryName: string) => {
+      // @ts-ignore
+      const config: DockerComposeBinary = service.binaries[binaryName];
+      const binaryParts = ['docker-compose'];
+
+      if (config.exec) {
+        binaryParts.push('exec');
+      } else {
+        binaryParts.push('run', '--rm');
+      }
+
+      if (config.workdir) {
+        binaryParts.push('--workdir', config.workdir);
+      }
+
+      binaryParts.push(serviceName, config.command, '"$@"');
+
+      BinaryManager.registerBinary(binaryName, binaryParts.join(' '));
+    });
 
     delete service['binaries'];
   }
