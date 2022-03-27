@@ -15,7 +15,7 @@ export interface DockerComposeService {
   restart?: string;
   init?: boolean;
   environment?: { [key: string]: string | number | boolean };
-  labels?: { [key: string]: string | number | boolean };
+  labels?: string[];
   ports?: string[];
   user?: string;
   volumes?: string[];

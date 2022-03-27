@@ -15,6 +15,7 @@ export const builder = {
   },
 };
 export const handler = async (argv: Arguments<Options>): Promise<void> => {
+  console.log(argv)
   const data = ConfigManager.getConfiguration();
   const projectName = data.project.name;
 
