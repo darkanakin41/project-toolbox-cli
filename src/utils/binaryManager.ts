@@ -16,8 +16,8 @@ export module BinaryManager {
 
   function composeBuildBinary(binaryConfig: DockerComposeBinary): string {
     if (!binaryConfig.serviceName) {
-      Logger.error('Service name missing on binary', true)
-      return ''
+      Logger.error('Service name missing on binary', true);
+      return '';
     }
 
     // @ts-ignore
@@ -35,7 +35,7 @@ export module BinaryManager {
 
     binaryParts.push(binaryConfig.serviceName, binaryConfig.command);
 
-    return binaryParts.join(' ')
+    return binaryParts.join(' ');
   }
 
   export function registerBinary(name: string, binary: string): void {
@@ -56,22 +56,21 @@ export module BinaryManager {
   }
 
   export function retrieveBinary(name: string): string {
-    const data = ConfigManager.getConfiguration()
+    const data = ConfigManager.getConfiguration();
     const jstFiles: string[] = File.findAllFilesRecursive(data.project.root, '(.*)\\.jst(.*)?');
 
-    let binaries: { [key: string]: DockerComposeBinary } = {}
+    let binaries: { [key: string]: DockerComposeBinary } = {};
     jstFiles.forEach((file: string) => {
-      const targetFilename = file.replace('.jst', '');
       const fileContent = fs.readFileSync(file, 'utf8');
 
-      binaries = { ...binaries, ...JavascriptTemplate.getBinaries(fileContent, data) }
+      binaries = { ...binaries, ...JavascriptTemplate.getBinaries(fileContent, data) };
     });
 
     if (!binaries[name]) {
-      Logger.error(`Unknown binary ${name}`)
+      Logger.error(`Unknown binary ${name}`);
       return '';
     }
 
-    return composeBuildBinary(binaries[name])
+    return composeBuildBinary(binaries[name]);
   }
 }

@@ -3,7 +3,6 @@ import { jsYamlConfiguration } from '../config/js-yaml';
 import Configuration from '../model/Configuration';
 import { DockerCompose, DockerComposeBinary, DockerComposeService, DockerComposeVirtualHost } from '../model/DockerCompose';
 import { BinaryManager } from './binaryManager';
-import { Logger } from './logger';
 
 class JavascriptTemplateTools {
   private data: Configuration;
@@ -51,14 +50,14 @@ class JavascriptTemplateTools {
   }
 
   getBinaries(composeConfiguration: DockerCompose): { [key: string]: DockerComposeBinary } {
-    let binaries = {}
+    let binaries = {};
 
     Object.keys(composeConfiguration.services).forEach((serviceName) => {
       const service = composeConfiguration.services[serviceName];
       binaries = { ...binaries, ...this.composeGetBinaries(serviceName, service) };
     });
 
-    return binaries
+    return binaries;
   }
 
   composeAddRestart(service: DockerComposeService): void {
@@ -106,8 +105,6 @@ class JavascriptTemplateTools {
     }
 
     Object.keys(service.binaries).forEach((binaryName: string) => {
-      // @ts-ignore
-      const config: DockerComposeBinary = service.binaries[binaryName];
       const binaryParts = [`$(pt binary get ${binaryName})`, '"$@"'];
       BinaryManager.registerBinary(binaryName, binaryParts.join(' '));
     });
@@ -117,14 +114,14 @@ class JavascriptTemplateTools {
 
   composeGetBinaries(serviceName: string, service: DockerComposeService): { [key: string]: DockerComposeBinary } {
     if (!service.binaries) {
-      console
+      console;
       return {};
     }
     Object.keys(service.binaries).forEach((binaryName: string) => {
       // @ts-ignore
       const config: DockerComposeBinary = service.binaries[binaryName];
-      config.serviceName = serviceName
-    })
+      config.serviceName = serviceName;
+    });
     return service.binaries;
   }
 
@@ -203,7 +200,7 @@ export module JavascriptTemplate {
     // noinspection JSUnusedLocalSymbols
     const JST = new JavascriptTemplateTools(data);
     const result = eval(template);
-    return yaml.dump(JST.compose(result), jsYamlConfiguration)
+    return yaml.dump(JST.compose(result), jsYamlConfiguration);
   }
 
   export function getBinaries(template: string, data: Configuration): { [key: string]: DockerComposeBinary } {
@@ -211,6 +208,6 @@ export module JavascriptTemplate {
     const JST = new JavascriptTemplateTools(data);
     const result: DockerCompose = eval(template);
 
-    return JST.getBinaries(result)
+    return JST.getBinaries(result);
   }
 }
