@@ -46,7 +46,6 @@ export module BinaryManager {
     Git.addToGitignore(getProjectRoot(), '/' + ConfigManager.getConfiguration().binary.directory);
 
     const binaryPath = path.join(binaryDirectory, name);
-    console.log(binaryDirectory, binaryPath);
 
     const fileElements = [];
 
@@ -57,7 +56,7 @@ export module BinaryManager {
 
   export function retrieveBinary(name: string): string {
     const data = ConfigManager.getConfiguration();
-    const jstFiles: string[] = File.findAllFilesRecursive(data.project.root, '(.*)\\.jst(.*)?');
+    const jstFiles: string[] = File.findAllFilesRecursive(data.project.root, /(.*)\.jst(.*)?/);
 
     let binaries: { [key: string]: DockerComposeBinary } = {};
     jstFiles.forEach((file: string) => {

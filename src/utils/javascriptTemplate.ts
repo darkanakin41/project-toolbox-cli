@@ -6,6 +6,7 @@ import { BinaryManager } from './binaryManager';
 
 class JavascriptTemplateTools {
   private data: Configuration;
+  private needsReverseProxy: boolean = false;
 
   constructor(data: Configuration) {
     this.data = data;
@@ -92,9 +93,16 @@ class JavascriptTemplateTools {
       return;
     }
 
-    service.build = {
-      context: `${this.data.docker.build.baseDirectory}/${service.buildImage}`,
-    };
+    if(this.data.docker.build.baseDirectory !== '.'){
+      service.build = {
+        context: `${this.data.docker.build.baseDirectory}/${service.buildImage}`,
+      };
+    }else{
+      service.build = {
+        context: `.`,
+      };
+    }
+
 
     delete service['buildImage'];
   }
@@ -114,7 +122,6 @@ class JavascriptTemplateTools {
 
   composeGetBinaries(serviceName: string, service: DockerComposeService): { [key: string]: DockerComposeBinary } {
     if (!service.binaries) {
-      console;
       return {};
     }
     Object.keys(service.binaries).forEach((binaryName: string) => {
@@ -130,7 +137,7 @@ class JavascriptTemplateTools {
       composeConfiguration.networks = {};
     }
 
-    if (this.data.reverseProxy.enabled) {
+    if (this.data.reverseProxy.enabled && this.needsReverseProxy) {
       composeConfiguration.networks[this.data.reverseProxy.network] = {
         external: true,
         name: this.data.reverseProxy.network,
@@ -157,6 +164,7 @@ class JavascriptTemplateTools {
     if (!service.virtualHosts) {
       return;
     }
+    this.needsReverseProxy = true
     let labels: { [key: string]: string | number | boolean } = service.labels ?? {
       'traefik.enable': true,
     };

@@ -14,8 +14,8 @@ export const handler = async (): Promise<void> => {
 
   Logger.info(`[ddb] Environment set to "${data.env.current}"`);
 
-  const jstFiles: string[] = File.findAllFilesRecursive(data.project.root, '(.*)\\.jst(.*)?');
-  const jinjaFiles: string[] = File.findAllFilesRecursive(data.project.root, '(.*)\\.jinja(.*)?');
+  const jstFiles: string[] = File.findAllFilesRecursive(data.project.root, /(.*)\.jst(.*)?/);
+  const jinjaFiles: string[] = File.findAllFilesRecursive(data.project.root, /(.*)\.jinja(.*)?/);
 
   jstFiles.forEach((file: string) => {
     const targetFilename = file.replace('.jst', '');
@@ -38,7 +38,7 @@ export const handler = async (): Promise<void> => {
     Logger.success(`[templates] converted "${file.replace(data.project.root, '')}" to "${targetFilename.replace(data.project.root, '')}"`);
   });
 
-  const environmentFiles: string[] = File.findAllFilesRecursive(data.project.root, `(.*)\\.${data.env.current}\\.?(.*)?`, ['(.*)\\.jsonnet(.*)?', '(.*)\\.jinja(.*)?']);
+  const environmentFiles: string[] = File.findAllFilesRecursive(data.project.root, new RegExp(`(.*)\\.${data.env.current}\\.?(.*)?`), ['(.*)\\.jsonnet(.*)?', '(.*)\\.jinja(.*)?']);
   environmentFiles.forEach((file: string) => {
     const targetFilename = file.replace(`.${data.env.current}`, '');
 
