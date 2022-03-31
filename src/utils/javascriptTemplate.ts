@@ -93,16 +93,15 @@ class JavascriptTemplateTools {
       return;
     }
 
-    if(this.data.docker.build.baseDirectory !== '.'){
+    if (this.data.docker.build.baseDirectory !== '.') {
       service.build = {
         context: `${this.data.docker.build.baseDirectory}/${service.buildImage}`,
       };
-    }else{
+    } else {
       service.build = {
         context: `.`,
       };
     }
-
 
     delete service['buildImage'];
   }
@@ -164,7 +163,7 @@ class JavascriptTemplateTools {
     if (!service.virtualHosts) {
       return;
     }
-    this.needsReverseProxy = true
+    this.needsReverseProxy = true;
     let labels: { [key: string]: string | number | boolean } = service.labels ?? {
       'traefik.enable': true,
     };

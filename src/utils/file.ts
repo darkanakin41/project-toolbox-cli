@@ -3,25 +3,25 @@ import path from 'path';
 import { ConfigManager } from './config';
 import { Logger } from './logger';
 
-const excluded:(string|RegExp)[] = ['node_modules', 'vendor', 'var', 'bundles', /\.idea/, /\.github/, /\.git/, 'cache', '.vscode', /\.docker-data/];
+const excluded: (string | RegExp)[] = ['node_modules', 'vendor', 'var', 'bundles', /\.idea/, /\.github/, /\.git/, 'cache', '.vscode', /\.docker-data/];
 
 export namespace File {
-  function isExcludedPattern(toCheck: string, excludedPatterns: (string|RegExp)[]): boolean {
+  function isExcludedPattern(toCheck: string, excludedPatterns: (string | RegExp)[]): boolean {
     if (excludedPatterns.length === 0) {
       return false;
     }
     let isExcluded = false;
-    excludedPatterns.forEach((pattern: (string|RegExp)) => {
+    excludedPatterns.forEach((pattern: string | RegExp) => {
       const regex = new RegExp(pattern);
       if (regex.test(toCheck)) {
-        Logger.debug(`${toCheck}=> Excluded because of pattern ${pattern}`)
+        Logger.debug(`${toCheck}=> Excluded because of pattern ${pattern}`);
         isExcluded = true;
       }
     });
     return isExcluded;
   }
 
-  export function findAllFiles(dir: string, pattern: (string|RegExp)): string[] {
+  export function findAllFiles(dir: string, pattern: string | RegExp): string[] {
     if (!fs.existsSync(dir)) {
       return [];
     }
@@ -43,7 +43,7 @@ export namespace File {
     });
   }
 
-  export function findAllFilesRecursive(dir: string, pattern: (string|RegExp), excludedPatterns: string[] = []): string[] {
+  export function findAllFilesRecursive(dir: string, pattern: string | RegExp, excludedPatterns: string[] = []): string[] {
     Logger.debug(`Searching for files matching "${pattern} in ${dir} (recursive)`);
     const excludedFolders = [...excluded, ...ConfigManager.getConfiguration().files.ignoredFolders];
     const files: string[] = fs.readdirSync(dir);
