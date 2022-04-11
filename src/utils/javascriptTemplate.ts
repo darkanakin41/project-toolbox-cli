@@ -1,7 +1,7 @@
 import yaml from 'js-yaml';
 import { jsYamlConfiguration } from '../config/js-yaml';
 import Configuration from '../model/Configuration';
-import { DockerCompose, DockerComposeBinary, DockerComposeService, DockerComposeVirtualHost } from '../model/DockerCompose';
+import { DockerCompose, DockerComposeBinary, DockerComposeLabels, DockerComposeService, DockerComposeVirtualHost } from '../model/DockerCompose';
 import { BinaryManager } from './binaryManager';
 
 class JavascriptTemplateTools {
@@ -14,6 +14,16 @@ class JavascriptTemplateTools {
 
   isEnv(env: string): boolean {
     return this.data.env.current === env;
+  }
+
+  getUID(): number {
+    const user = this.data.docker.user;
+    return user.uid;
+  }
+
+  getGID(): number {
+    const user = this.data.docker.user;
+    return user.gid;
   }
 
   prefixPort(port: string | number, outputPort: string | null = null): string {
@@ -164,44 +174,68 @@ class JavascriptTemplateTools {
       return;
     }
     this.needsReverseProxy = true;
-    let labels: { [key: string]: string | number | boolean } = service.labels ?? {
+    let labels: DockerComposeLabels = service.labels ?? {
       'traefik.enable': true,
     };
 
     // @ts-ignore
     const projectNameFormated = this.data.project.name.replace(/[^a-zA-Z0-9]/g, '-');
 
-    const redirectToHttps = this.data.reverseProxy.redirectToHttps ?? false;
-    const tls = this.data.reverseProxy.tls ?? false;
-    const certResolver = this.data.reverseProxy.certResolver ?? null;
-
     service.virtualHosts.forEach((virtualHost: DockerComposeVirtualHost | null) => {
       if (virtualHost === null) {
         return;
       }
       const serviceName = `${projectNameFormated}-${virtualHost.name}`;
-      labels[`traefik.http.routers.${serviceName}.rule`] = `Host(\`${virtualHost.domain}\`)`;
-      labels[`traefik.http.routers.${serviceName}.service`] = serviceName;
-      labels[`traefik.http.services.${serviceName}.loadbalancer.server.port`] = `${virtualHost.port}`;
-      if (redirectToHttps) {
-        const middlewareName = `${serviceName}-redirect-to-https`;
-        labels[`traefik.http.middlewares.${middlewareName}.redirectscheme.scheme`] = 'https';
-        labels[`traefik.http.routers.${serviceName}.middlewares`] = middlewareName;
-      }
-      if (tls) {
-        labels[`traefik.http.routers.${serviceName}-tls.tls`] = 'true';
-        if (certResolver) {
-          labels[`traefik.http.routers.${serviceName}-tls.tls.certresolver`] = certResolver;
-        }
-        labels[`traefik.http.routers.${serviceName}-tls.rule`] = `Host(\`${virtualHost.domain}\`)`;
-        labels[`traefik.http.routers.${serviceName}-tls.service`] = serviceName;
+      switch (virtualHost.type) {
+        default:
+        case 'http':
+          this.composeHandleTraefikVirtualHostHttp(serviceName, labels, virtualHost);
+          break;
       }
     });
 
     service.labels = labels;
   }
-}
 
+  composeHandleTraefikVirtualHostHttp(serviceName: string, labels: DockerComposeLabels, virtualHost: DockerComposeVirtualHost): void {
+    const redirectToHttps = this.data.reverseProxy.redirectToHttps ?? false;
+    const tls = this.data.reverseProxy.tls ?? false;
+    const certResolver = this.data.reverseProxy.certResolver ?? null;
+
+    labels[`traefik.http.routers.${serviceName}.entrypoints`] = `http`;
+    if (virtualHost.host) {
+      labels[`traefik.http.routers.${serviceName}.rule`] = `Host(${virtualHost.host})`;
+    } else if (virtualHost.domain) {
+      labels[`traefik.http.routers.${serviceName}.rule`] = `Host(\`${virtualHost.domain}\`)`;
+    }
+    if (virtualHost.service) {
+      labels[`traefik.http.routers.${serviceName}.service`] = virtualHost.service;
+    } else {
+      labels[`traefik.http.routers.${serviceName}.service`] = serviceName;
+    }
+    if (virtualHost.port) {
+      labels[`traefik.http.services.${serviceName}.loadbalancer.server.port`] = `${virtualHost.port}`;
+    }
+    if (redirectToHttps) {
+      const middlewareName = `${serviceName}-redirect-to-https`;
+      labels[`traefik.http.middlewares.${middlewareName}.redirectscheme.scheme`] = 'https';
+      labels[`traefik.http.routers.${serviceName}.middlewares`] = middlewareName;
+    }
+    if (tls) {
+      labels[`traefik.http.routers.${serviceName}-tls.tls`] = 'true';
+      labels[`traefik.http.routers.${serviceName}-tls.entrypoints`] = `https`;
+      if (certResolver) {
+        labels[`traefik.http.routers.${serviceName}-tls.tls.certresolver`] = certResolver;
+      }
+      if (virtualHost.host) {
+        labels[`traefik.http.routers.${serviceName}-tls.rule`] = `Host(${virtualHost.host})`;
+      } else if (virtualHost.domain) {
+        labels[`traefik.http.routers.${serviceName}-tls.rule`] = `Host(\`${virtualHost.domain}\`)`;
+      }
+      labels[`traefik.http.routers.${serviceName}-tls.service`] = serviceName;
+    }
+  }
+}
 export module JavascriptTemplate {
   export function process(template: string, data: Configuration): string {
     // noinspection JSUnusedLocalSymbols

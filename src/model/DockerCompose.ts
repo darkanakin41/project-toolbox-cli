@@ -5,6 +5,10 @@ export interface DockerCompose {
   version?: string;
 }
 
+export interface DockerComposeLabels {
+  [key: string]: string | number | boolean;
+}
+
 export interface DockerComposeNetwork {
   external: boolean;
   name: string;
@@ -12,10 +16,11 @@ export interface DockerComposeNetwork {
 
 export interface DockerComposeService {
   image?: string;
+  container_name?: string;
   restart?: string;
   init?: boolean;
   environment?: { [key: string]: string | number | boolean };
-  labels?: { [key: string]: string | number | boolean };
+  labels?: DockerComposeLabels;
   ports?: string[];
   user?: string;
   volumes?: string[];
@@ -42,7 +47,10 @@ export interface DockerComposeBinary {
 }
 
 export interface DockerComposeVirtualHost {
-  port: string;
-  domain: string;
+  port?: string;
+  domain?: string;
+  host?: string;
   name: string;
+  service?: string;
+  type?: 'http' | 'rtmp';
 }
