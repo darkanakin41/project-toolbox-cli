@@ -1,4 +1,6 @@
-export default interface Configuration {
+import { ObjectTools } from "../utils/object";
+
+export default interface Configuration extends ObjectTools.AnObject {
   binary: BinaryConfiguration;
   compose: ComposeConfiguration;
   data: { [key: string]: string | number };

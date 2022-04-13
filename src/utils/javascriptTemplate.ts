@@ -3,6 +3,7 @@ import { jsYamlConfiguration } from '../config/js-yaml';
 import Configuration from '../model/Configuration';
 import { DockerCompose, DockerComposeBinary, DockerComposeLabels, DockerComposeService, DockerComposeVirtualHost } from '../model/DockerCompose';
 import { BinaryManager } from './binaryManager';
+import { ObjectTools } from './object';
 
 class JavascriptTemplateTools {
   private data: Configuration;
@@ -14,6 +15,11 @@ class JavascriptTemplateTools {
 
   isEnv(env: string): boolean {
     return this.data.env.current === env;
+  }
+
+  getConfiguration(field: string): string | number | null {
+    const dataFlattened = ObjectTools.flatten(this.data);
+    return dataFlattened[field] ?? null;
   }
 
   getUID(): number {
@@ -56,6 +62,7 @@ class JavascriptTemplateTools {
     });
 
     this.composeHandleNetworks(composeConfiguration);
+    this.composeHandleVolumes(composeConfiguration);
 
     return composeConfiguration;
   }
@@ -152,6 +159,28 @@ class JavascriptTemplateTools {
         name: this.data.reverseProxy.network,
       };
     }
+  }
+
+  composeHandleVolumes(composeConfiguration: DockerCompose): void {
+    if (!composeConfiguration.volumes) {
+      composeConfiguration.volumes = {};
+    }
+
+    const volumes = composeConfiguration.volumes;
+
+    Object.keys(composeConfiguration.services).forEach((serviceName: string) => {
+      const serviceConfiguration: DockerComposeService = composeConfiguration.services[serviceName];
+      if (!serviceConfiguration.volumes) {
+        return;
+      }
+      serviceConfiguration.volumes.forEach((volume: string) => {
+        const localPart: string = volume.split(':')[0];
+        if (localPart.indexOf('/') !== 0 && localPart.indexOf('./') !== 0) {
+          volumes[localPart] = {};
+        }
+      });
+    });
+    composeConfiguration.volumes = volumes;
   }
 
   composeHandleVirtualHost(service: DockerComposeService): void {
