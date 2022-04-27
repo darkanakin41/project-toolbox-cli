@@ -231,6 +231,9 @@ class JavascriptTemplateTools {
     const tls = this.data.reverseProxy.tls ?? false;
     const certResolver = this.data.reverseProxy.certResolver ?? null;
 
+    const httpMiddlewares: string[] = [];
+    const httpsMiddlewares: string[] = [];
+
     labels[`traefik.http.routers.${serviceName}.entrypoints`] = `http`;
     if (virtualHost.host) {
       labels[`traefik.http.routers.${serviceName}.rule`] = `Host(${virtualHost.host})`;
@@ -246,9 +249,18 @@ class JavascriptTemplateTools {
       labels[`traefik.http.services.${serviceName}.loadbalancer.server.port`] = `${virtualHost.port}`;
     }
     if (redirectToHttps) {
-      const middlewareName = `${serviceName}-redirect-to-https`;
-      labels[`traefik.http.middlewares.${middlewareName}.redirectscheme.scheme`] = 'https';
-      labels[`traefik.http.routers.${serviceName}.middlewares`] = middlewareName;
+      const redirectToHttpsMiddleware = `${serviceName}-redirect-to-https`;
+      labels[`traefik.http.middlewares.${redirectToHttpsMiddleware}.redirectscheme.scheme`] = 'https';
+      httpMiddlewares.push(redirectToHttpsMiddleware)
+    }
+    if(virtualHost.prefix){
+      const prefixMiddleware = `${serviceName}-prefix`;
+      labels[`traefik.http.middlewares.${prefixMiddleware}.addprefix.prefix`] = virtualHost.prefix;
+      httpMiddlewares.push(prefixMiddleware)
+      httpsMiddlewares.push(prefixMiddleware)
+    }
+    if (httpMiddlewares.length > 0) {
+      labels[`traefik.http.routers.${serviceName}.middlewares`] = httpMiddlewares.join(', ');
     }
     if (tls) {
       labels[`traefik.http.routers.${serviceName}-tls.tls`] = 'true';
@@ -262,6 +274,9 @@ class JavascriptTemplateTools {
         labels[`traefik.http.routers.${serviceName}-tls.rule`] = `Host(\`${virtualHost.domain}\`)`;
       }
       labels[`traefik.http.routers.${serviceName}-tls.service`] = serviceName;
+      if (httpsMiddlewares.length > 0) {
+        labels[`traefik.http.routers.${serviceName}-tls.middlewares`] = httpsMiddlewares.join(', ');
+      }
     }
   }
 }

@@ -52,5 +52,6 @@ export interface DockerComposeVirtualHost {
   host?: string;
   name: string;
   service?: string;
+  prefix?: string;
   type?: 'http' | 'rtmp';
 }
