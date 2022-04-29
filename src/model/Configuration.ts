@@ -1,4 +1,4 @@
-import { ObjectTools } from "../utils/object";
+import { ObjectTools } from '../utils/object';
 
 export default interface Configuration extends ObjectTools.AnObject {
   binary: BinaryConfiguration;

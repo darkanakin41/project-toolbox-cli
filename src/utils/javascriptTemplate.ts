@@ -259,13 +259,13 @@ class JavascriptTemplateTools {
     if (redirectToHttps) {
       const redirectToHttpsMiddleware = `${serviceName}-redirect-to-https`;
       labels[`traefik.http.middlewares.${redirectToHttpsMiddleware}.redirectscheme.scheme`] = 'https';
-      httpMiddlewares.push(redirectToHttpsMiddleware)
+      httpMiddlewares.push(redirectToHttpsMiddleware);
     }
-    if(virtualHost.prefix){
+    if (virtualHost.prefix) {
       const prefixMiddleware = `${serviceName}-prefix`;
       labels[`traefik.http.middlewares.${prefixMiddleware}.addprefix.prefix`] = virtualHost.prefix;
-      httpMiddlewares.push(prefixMiddleware)
-      httpsMiddlewares.push(prefixMiddleware)
+      httpMiddlewares.push(prefixMiddleware);
+      httpsMiddlewares.push(prefixMiddleware);
     }
     if (httpMiddlewares.length > 0) {
       labels[`traefik.http.routers.${serviceName}.middlewares`] = httpMiddlewares.join(', ');

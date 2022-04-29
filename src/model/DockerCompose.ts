@@ -1,5 +1,5 @@
 export interface DockerCompose {
-  volumes?: {  [key: string]: any };
+  volumes?: { [key: string]: any };
   services: { [key: string]: DockerComposeService };
   networks?: { [key: string]: DockerComposeNetwork };
   version?: string;
