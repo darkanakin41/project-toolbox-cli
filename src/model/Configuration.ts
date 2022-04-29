@@ -54,6 +54,7 @@ export interface ReverseProxyConfiguration {
   tls: boolean;
   certResolver: null | 'letsencrypt';
   domain: ReverseProxyDomainConfiguration;
+  privateDomain: ReverseProxyDomainConfiguration;
 }
 
 export interface ReverseProxyDomainConfiguration {

@@ -7,6 +7,7 @@
   "license": "ISC",
   "scripts": {
     "build": "npx tsc",
+    "build:watch": "npx tsc --watch",
     "package": "npm run build && pkg . --public-packages '*' --output pkg/dt",
     "lint": "prettier --c ./src/**/*.ts",
     "prettify": "prettier --write ./src/**/*.ts"

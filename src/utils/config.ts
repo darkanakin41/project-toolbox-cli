@@ -52,6 +52,10 @@ export module ConfigManager {
         sub: 'test',
         ext: 'com',
       },
+      privateDomain: {
+        sub: 'test',
+        ext: 'com',
+      },
     },
     data: {},
   };
@@ -100,6 +104,7 @@ export module ConfigManager {
       Logger.debug(`using "${main.replace(getProjectRoot(), '')}" configuration file`);
       loadConfigurationFile(main, configuration);
       configuration.reverseProxy.domain.sub = configuration.project.name.replace(/[^a-zA-Z0-9]/g, '-');
+      configuration.reverseProxy.privateDomain.sub = configuration.project.name.replace(/[^a-zA-Z0-9]/g, '-');
     }
 
     const local = File.findAllFiles(configuration.project.root, 'pt\\.local\\.ya?ml')[0];

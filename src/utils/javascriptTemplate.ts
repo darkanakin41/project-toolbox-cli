@@ -48,6 +48,14 @@ class JavascriptTemplateTools {
     return domain;
   }
 
+  buildPrivateDomain(subdomain: string | null = null): string {
+    const domain = `${this.data.reverseProxy.privateDomain.sub}.${this.data.reverseProxy.privateDomain.ext}`;
+    if (subdomain) {
+      return `${subdomain}.${domain}`;
+    }
+    return domain;
+  }
+
   compose(composeConfiguration: DockerCompose): DockerCompose {
     composeConfiguration.version = this.data.compose.version;
 
