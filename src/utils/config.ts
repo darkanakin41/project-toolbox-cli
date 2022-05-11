@@ -3,7 +3,7 @@ import path from 'path';
 import _ from 'lodash';
 import { File } from './file';
 import yaml from 'js-yaml';
-import os from 'os';
+import os, { NetworkInterfaceInfo, networkInterfaces } from 'os';
 import Configuration from '../model/Configuration';
 import { Logger } from './logger';
 
@@ -37,6 +37,10 @@ export module ConfigManager {
     files: {
       ignoredFolders: [],
     },
+    host: {
+      nics: [],
+      ips: [],
+    },
     project: {
       name: '',
       root: '',
@@ -67,6 +71,23 @@ export module ConfigManager {
     const fileContent = fs.readFileSync(file, 'utf8');
     const yamlContent = yaml.load(fileContent);
     _.merge(configuration, yamlContent);
+  }
+
+  function updateHostConfiguration(configuration: Configuration): void{
+    const interfaces: NodeJS.Dict<NetworkInterfaceInfo[]> = networkInterfaces()
+    Object.keys(interfaces).forEach((interfaceName) => {
+      if(interfaceName.indexOf('veth') === -1 && interfaceName.indexOf('br-') === -1 && interfaceName.indexOf('lo') === -1){
+        
+        const IPV4Configuration = interfaces[interfaceName]?.find((ipConfiguration) => {
+          return ipConfiguration.family === 'IPv4'
+        })
+
+        if (IPV4Configuration) {
+          configuration.host.nics.push(interfaceName)
+          configuration.host.ips.push(IPV4Configuration.address)
+        }
+      }
+    })
   }
 
   export const getProjectRoot = (): string => {
@@ -119,6 +140,8 @@ export module ConfigManager {
       loadConfigurationFile(environment, configuration);
     }
     calculatedConfiguration = configuration;
+
+    updateHostConfiguration(configuration);
     return configuration;
   };
 }

@@ -7,6 +7,7 @@ export default interface Configuration extends ObjectTools.AnObject {
   docker: DockerConfiguration;
   env: EnvConfiguration;
   files: FilesConfiguration;
+  host: HostConfiguration;
   project: ProjectConfiguration;
   reverseProxy: ReverseProxyConfiguration;
 }
@@ -64,4 +65,9 @@ export interface ReverseProxyDomainConfiguration {
 
 export interface FilesConfiguration {
   ignoredFolders: string[];
+}
+
+export interface HostConfiguration {
+  nics: string[];
+  ips: string[];
 }

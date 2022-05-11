@@ -1,9 +1,13 @@
+import { existsSync, mkdirSync } from 'fs';
 import yaml from 'js-yaml';
 import { jsYamlConfiguration } from '../config/js-yaml';
 import Configuration from '../model/Configuration';
 import { DockerCompose, DockerComposeBinary, DockerComposeLabels, DockerComposeService, DockerComposeVirtualHost } from '../model/DockerCompose';
 import { BinaryManager } from './binaryManager';
 import { ObjectTools } from './object';
+import { Git } from './git';
+import { ConfigManager } from './config';
+import path from 'path';
 
 class JavascriptTemplateTools {
   private data: Configuration;
@@ -17,7 +21,7 @@ class JavascriptTemplateTools {
     return this.data.env.current === env;
   }
 
-  getConfiguration(field: string): string | number | null {
+  getConfiguration(field: string): string | number | boolean | null {
     const dataFlattened = ObjectTools.flatten(this.data);
     return dataFlattened[field] ?? null;
   }
@@ -185,10 +189,22 @@ class JavascriptTemplateTools {
         const localPart: string = volume.split(':')[0];
         if (localPart.indexOf('/') !== 0 && localPart.indexOf('./') !== 0) {
           volumes[localPart] = {};
+        } else if (localPart.indexOf('./') === 0) {
+          this._handleLocalVolume(localPart);
         }
       });
     });
     composeConfiguration.volumes = volumes;
+  }
+
+  _handleLocalVolume(volumePath: string): void {
+    const fullPath = path.join(ConfigManager.getProjectRoot(), volumePath)
+    if (!existsSync(fullPath)) {
+      mkdirSync(fullPath, { recursive: true });
+    }
+    if (!Git.isFileIgnored(ConfigManager.getProjectRoot(), volumePath)) {
+      Git.addToGitignore(ConfigManager.getProjectRoot(), volumePath);
+    }
   }
 
   composeHandleVirtualHost(service: DockerComposeService): void {

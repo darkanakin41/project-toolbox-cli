@@ -46,30 +46,34 @@ export namespace File {
   export function findAllFilesRecursive(dir: string, pattern: string | RegExp, excludedPatterns: string[] = []): string[] {
     Logger.debug(`Searching for files matching "${pattern} in ${dir} (recursive)`);
     const excludedFolders = [...excluded, ...ConfigManager.getConfiguration().files.ignoredFolders];
-    const files: string[] = fs.readdirSync(dir);
-    files.forEach((file, index) => {
-      files[index] = path.join(dir, file);
-    });
+    try {
+      const files: string[] = fs.readdirSync(dir);
+      files.forEach((file, index) => {
+        files[index] = path.join(dir, file);
+      });
 
-    const subfolders: string[] = [];
-    files.forEach((file: string) => {
-      const stat = fs.statSync(file);
-      if (stat.isDirectory()) {
-        if (!isExcludedPattern(file, excludedFolders)) {
-          subfolders.push(file);
+      const subfolders: string[] = [];
+      files.forEach((file: string) => {
+        const stat = fs.statSync(file);
+        if (stat.isDirectory()) {
+          if (!isExcludedPattern(file, excludedFolders)) {
+            subfolders.push(file);
+          }
         }
-      }
-    });
+      });
 
-    subfolders.forEach((subfolder: string) => {
-      const subfiles = findAllFilesRecursive(subfolder, pattern);
-      files.push(...subfiles);
-    });
+      subfolders.forEach((subfolder: string) => {
+        const subfiles = findAllFilesRecursive(subfolder, pattern);
+        files.push(...subfiles);
+      });
 
-    const regex = new RegExp(pattern);
-    return files.filter((file) => {
-      const stat = fs.statSync(file);
-      return !stat.isDirectory() && regex.test(path.basename(file)) && !isExcludedPattern(path.basename(file), excludedPatterns);
-    });
+      const regex = new RegExp(pattern);
+      return files.filter((file) => {
+        const stat = fs.statSync(file);
+        return !stat.isDirectory() && regex.test(path.basename(file)) && !isExcludedPattern(path.basename(file), excludedPatterns);
+      });
+    }catch(error){
+      return []
+    }
   }
 }
