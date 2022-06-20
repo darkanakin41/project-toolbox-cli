@@ -1,10 +1,10 @@
 import fs from 'fs';
-import path from 'path';
-import _ from 'lodash';
-import { File } from './file';
 import yaml from 'js-yaml';
+import _ from 'lodash';
 import os, { NetworkInterfaceInfo, networkInterfaces } from 'os';
+import path from 'path';
 import Configuration from '../model/Configuration';
+import { File } from './file';
 import { Logger } from './logger';
 
 export module ConfigManager {
@@ -73,27 +73,28 @@ export module ConfigManager {
     _.merge(configuration, yamlContent);
   }
 
-  function updateHostConfiguration(configuration: Configuration): void{
-    const interfaces: NodeJS.Dict<NetworkInterfaceInfo[]> = networkInterfaces()
+  function updateHostConfiguration(configuration: Configuration): void {
+    const interfaces: NodeJS.Dict<NetworkInterfaceInfo[]> = networkInterfaces();
     Object.keys(interfaces).forEach((interfaceName) => {
-      if(interfaceName.indexOf('veth') === -1 && interfaceName.indexOf('br-') === -1 && interfaceName.indexOf('lo') === -1){
-        
+      if (interfaceName.indexOf('veth') === -1 && interfaceName.indexOf('br-') === -1 && interfaceName.indexOf('lo') === -1) {
         const IPV4Configuration = interfaces[interfaceName]?.find((ipConfiguration) => {
-          return ipConfiguration.family === 'IPv4'
-        })
+          return ipConfiguration.family === 'IPv4';
+        });
 
         if (IPV4Configuration) {
-          configuration.host.nics.push(interfaceName)
-          configuration.host.ips.push(IPV4Configuration.address)
+          configuration.host.nics.push(interfaceName);
+          configuration.host.ips.push(IPV4Configuration.address);
         }
       }
-    })
+    });
   }
 
-  export const getProjectRoot = (): string => {
-    let folder = process.cwd();
+  export const getProjectRoot = (folder?: string | null): string => {
+    if (!folder) {
+      folder = process.cwd();
+    }
     if (fs.existsSync(path.join(folder, 'pt.yaml'))) {
-      return process.cwd();
+      return folder;
     }
 
     while (folder !== path.parse(folder).root) {
@@ -104,6 +105,56 @@ export module ConfigManager {
     }
     Logger.error(`project-toolbox not configured, please create a pt.yaml at root folder of your project`, true);
     return '';
+  };
+
+  export const isProjectToolboxFolder = (folder?: string | null): boolean => {
+    if (!folder) {
+      folder = process.cwd();
+    }
+    if (fs.existsSync(path.join(folder, 'pt.yaml'))) {
+      return true;
+    }
+
+    while (folder !== path.parse(folder).root) {
+      folder = path.parse(folder).dir;
+      if (fs.existsSync(path.join(folder, 'pt.yaml'))) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  export const projectToolboxBinPath = (folder?: string | null): string | null => {
+    if (!isProjectToolboxFolder(folder)) {
+      return null;
+    }
+
+    return path.join(getProjectRoot(folder), '.bin');
+  };
+
+  export const generateNewPath = (add: boolean = false, folder?: string | null): string | null => {
+    if (!process.env.PATH) {
+      return null;
+    }
+
+    if (add) {
+      return `${projectToolboxBinPath(folder)};${process.env.PATH}`;
+    }
+
+    return process.env.PATH.replace(projectToolboxBinPath(folder) + ';', '').replace(';' + projectToolboxBinPath(folder), '');
+  };
+
+  export const isProjectToolboxEnabled = (folder?: string | null): boolean => {
+    if (!process.env.PATH || !isProjectToolboxFolder(folder)) {
+      return false;
+    }
+
+    const binPath = projectToolboxBinPath(folder);
+    if (!binPath) {
+      return false;
+    }
+
+    return process.env.PATH?.includes(binPath);
   };
 
   export const getConfiguration = () => {

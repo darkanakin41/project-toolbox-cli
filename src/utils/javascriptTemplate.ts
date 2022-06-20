@@ -12,6 +12,7 @@ import path from 'path';
 class JavascriptTemplateTools {
   private data: Configuration;
   private needsReverseProxy: boolean = false;
+  private ports: number[] = [];
 
   constructor(data: Configuration) {
     this.data = data;
@@ -38,10 +39,16 @@ class JavascriptTemplateTools {
 
   prefixPort(port: string | number, outputPort: string | null = null): string {
     if (outputPort) {
+      this.ports.push(parseInt(outputPort));
       return `${outputPort}:${port}`;
     }
     const portPrefix = this.data.docker.port_prefix;
-    return `${portPrefix}${port.toString().substring(port.toString().length - 2)}:${port}`;
+    let exposedPort: number = parseInt(`${portPrefix}${port.toString().substring(port.toString().length - 2)}`);
+    while (this.ports.includes(exposedPort)) {
+      exposedPort++;
+    }
+    this.ports.push(exposedPort);
+    return `${exposedPort}:${port}`;
   }
 
   buildDomain(subdomain: string | null = null): string {
@@ -198,7 +205,7 @@ class JavascriptTemplateTools {
   }
 
   _handleLocalVolume(volumePath: string): void {
-    const fullPath = path.join(ConfigManager.getProjectRoot(), volumePath)
+    const fullPath = path.join(ConfigManager.getProjectRoot(), volumePath);
     if (!existsSync(fullPath)) {
       mkdirSync(fullPath, { recursive: true });
     }
@@ -209,6 +216,12 @@ class JavascriptTemplateTools {
 
   composeHandleVirtualHost(service: DockerComposeService): void {
     if (!service.virtualHosts) {
+      return;
+    }
+
+    if (!this.data.reverseProxy.enabled) {
+      this.composeHandleNoReverseProxy(service);
+      delete service['virtualHosts'];
       return;
     }
 
@@ -248,6 +261,23 @@ class JavascriptTemplateTools {
     });
 
     service.labels = labels;
+  }
+
+  composeHandleNoReverseProxy(service: DockerComposeService): void {
+    if (!service.virtualHosts) {
+      return;
+    }
+    service.ports = [];
+
+    service.virtualHosts.forEach((virtualHost: DockerComposeVirtualHost | null) => {
+      if (!virtualHost) {
+        return;
+      }
+      if (!service.ports) {
+        service.ports = [];
+      }
+      service.ports.push(this.prefixPort(virtualHost.port ?? 0));
+    });
   }
 
   composeHandleTraefikVirtualHostHttp(serviceName: string, labels: DockerComposeLabels, virtualHost: DockerComposeVirtualHost): void {

@@ -7,3 +7,15 @@ https://medium.com/geekculture/building-a-node-js-cli-with-typescript-packaged-a
 https://www.npmjs.com/package/@hanazuki/node-jsonnet
 
 https://www.npmjs.com/package/jinja-js
+
+Add to .bashrc, .zshrc, or .profile:
+
+ZSH : 
+```zsh
+[ ${ZSH_VERSION} ] && precmd() { $(pt install); }
+```
+
+BASH : 
+```bash
+[ ${BASH_VERSION} ] && PROMPT_COMMAND='$(pt install)'
+```
