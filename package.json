@@ -8,9 +8,10 @@
   "scripts": {
     "build": "npx tsc",
     "build:watch": "npx tsc --watch",
-    "package": "npm run build && pkg . --public-packages '*' --output pkg/dt",
+    "package": "npm run build && pkg . --public-packages '*' --output pkg/pt",
     "lint": "prettier --c ./src/**/*.ts",
-    "prettify": "prettier --write ./src/**/*.ts"
+    "prettify": "prettier --write ./src/**/*.ts",
+    "install": "npm run package && cp pkg/pt-linux /usr/bin/pt"
   },
   "bin": {
     "pt": "./build/index.js",

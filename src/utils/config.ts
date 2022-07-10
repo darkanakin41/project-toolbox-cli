@@ -138,10 +138,10 @@ export module ConfigManager {
     }
 
     if (add) {
-      return `${projectToolboxBinPath(folder)};${process.env.PATH}`;
+      return `${projectToolboxBinPath(folder)}:${process.env.PATH}`;
     }
 
-    return process.env.PATH.replace(projectToolboxBinPath(folder) + ';', '').replace(';' + projectToolboxBinPath(folder), '');
+    return process.env.PATH.replace(projectToolboxBinPath(folder) + ':', '').replace(':' + projectToolboxBinPath(folder), '');
   };
 
   export const isProjectToolboxEnabled = (folder?: string | null): boolean => {

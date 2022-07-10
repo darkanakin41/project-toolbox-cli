@@ -16,6 +16,7 @@ export namespace Git {
     file = file.replace(/\\/g, '/');
     file = file.replace(/\[/g, '\\[');
     file = file.replace(/]/g, '\\]');
+    file = file.replace(/^.\//gm, '\/');
     return file;
   }
 
@@ -98,6 +99,8 @@ export namespace Git {
 
   export const addToGitignore = (workdir: string, file: string): void => {
     file = cleanFileName(file);
+    if(file.indexOf('.') === 0){
+    }
     if (isFileIgnored(workdir, file)) {
       return;
     }
