@@ -83,6 +83,8 @@ class JavascriptTemplateTools {
     this.composeHandleNetworks(composeConfiguration);
     this.composeHandleVolumes(composeConfiguration);
 
+    this.handleGlobalBinaries(composeConfiguration)
+
     return composeConfiguration;
   }
 
@@ -132,11 +134,17 @@ class JavascriptTemplateTools {
     if (this.data.docker.build.baseDirectory !== '.') {
       service.build = {
         context: `${this.data.docker.build.baseDirectory}/${service.buildImage}`,
+        dockerfile: 'Dockerfile',
       };
     } else {
       service.build = {
         context: `.`,
       };
+    }
+
+    if(service.buildArgs) {
+      service.build.args = service.buildArgs
+      delete service['buildArgs'];
     }
 
     delete service['buildImage'];
@@ -153,6 +161,22 @@ class JavascriptTemplateTools {
     });
 
     delete service['binaries'];
+  }
+
+  handleGlobalBinaries(composeConfiguration: DockerCompose): void {
+    if (!composeConfiguration.binaries) {
+      return;
+    }
+
+    Object.keys(composeConfiguration.binaries).forEach((binaryName: string) => {
+      if(!composeConfiguration.binaries){
+        return
+      }
+      const binaryParts = [composeConfiguration.binaries[binaryName], '"$@"'];
+      BinaryManager.registerBinary(binaryName, binaryParts.join(' '));
+    });
+
+    delete composeConfiguration['binaries'];
   }
 
   composeGetBinaries(serviceName: string, service: DockerComposeService): { [key: string]: DockerComposeBinary } {
@@ -230,7 +254,15 @@ class JavascriptTemplateTools {
         this.composeHandleTraefikVirtualHost(service);
         break;
     }
-    service.networks = ['default', this.data.reverseProxy.network];
+    if(!service.networks){
+      service.networks = ['default']
+    }
+    if(!service.networks.includes('default')){
+      service.networks.push('default');
+    }
+    if(!service.networks.includes(this.data.reverseProxy.network)){
+      service.networks.push(this.data.reverseProxy.network);
+    }
 
     delete service['virtualHosts'];
   }

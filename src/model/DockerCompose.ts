@@ -3,6 +3,7 @@ export interface DockerCompose {
   services: { [key: string]: DockerComposeService };
   networks?: { [key: string]: DockerComposeNetwork };
   version?: string;
+  binaries?: { [key: string]: string };
 }
 
 export interface DockerComposeLabels {
@@ -31,12 +32,15 @@ export interface DockerComposeService {
   // Custom Config
   applyUser?: boolean;
   buildImage?: boolean;
+  buildArgs?: { [key: string]: any };
   binaries?: { [key: string]: DockerComposeBinary }; // TODO handle
   virtualHosts?: (DockerComposeVirtualHost | null)[];
 }
 
 export interface DockerComposeServiceBuild {
   context?: string;
+  dockerfile?: string;
+  args?: { [key: string]: any };
 }
 
 export interface DockerComposeBinary {
