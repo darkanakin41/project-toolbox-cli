@@ -6,7 +6,7 @@ import { Git } from '../../utils/git';
 import { JavascriptTemplate } from '../../utils/javascriptTemplate';
 import { Logger } from '../../utils/logger';
 import path from 'path';
-import { Docker } from '../../utils/docker';
+import { DockerUtils } from '../../utils/dockerUtils';
 
 export const command: string = 'generate';
 export const desc: string = 'Get the current ddb configuration';
@@ -46,7 +46,7 @@ export const handler = async (): Promise<void> => {
     const fixuidConfig = path.join(workingFolder, 'fixuid.yml');
     if(fs.existsSync(fixuidConfig)){
       Logger.info(`[templates] Applying fixuid to "${file.replace(data.project.root + '/', '')}"`);
-      Docker.applyFixuid(workingFolder);
+      DockerUtils.applyFixuid(workingFolder);
     }
   });
 

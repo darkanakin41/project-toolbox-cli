@@ -22,6 +22,7 @@
     "jinja-js": "^0.1.8",
     "js-yaml": "^4.1.0",
     "lodash": "^4.17.21",
+    "node-docker-api": "^1.1.22",
     "simple-git": "^3.4.0",
     "yargs": "^17.4.0"
   },

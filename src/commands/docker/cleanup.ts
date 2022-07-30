@@ -2,8 +2,8 @@ import { DockerUtils } from '../../utils/dockerUtils';
 import { ConfigManager } from '../../utils/config';
 import { Logger } from '../../utils/logger';
 
-export const command: string = 'status';
-export const desc: string = 'Get the status of the current project';
+export const command: string = 'cleanup';
+export const desc: string = 'Cleanup docker unused images and volumes';
 export const builder = {};
 export const handler = async (): Promise<void> => {
   const data = ConfigManager.getConfiguration();
@@ -15,5 +15,7 @@ export const handler = async (): Promise<void> => {
     Logger.error(`[docker] ${projectName}: not dockerized`);
     return
   }
+
+  DockerUtils.cleanup()
 
 };

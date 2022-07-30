@@ -1,7 +1,17 @@
-import path from 'path';
 import fs from 'fs';
+import { Docker } from 'node-docker-api';
+import path from 'path';
+import { Logger } from './logger';
+import { NumberUtils } from './NumberUtils';
 
-export namespace Docker {
+export namespace DockerUtils {
+  let instance: Docker | undefined;
+  function getInstance(): Docker {
+    if (!instance) {
+      instance = new Docker({ socketPath: '/var/run/docker.sock' });
+    }
+    return instance;
+  }
   export function isDockerized(workdir: string): boolean {
     let dockerFolder = path.join(workdir, '.docker');
     let dockerCompose = path.join(workdir, 'docker-compose.yml');
@@ -14,7 +24,7 @@ export namespace Docker {
 
   export function applyFixuid(workdir: string): void {
     const dockerFile = path.join(workdir, 'Dockerfile');
-    
+
     if (!fs.existsSync(dockerFile)) {
       return;
     }
@@ -22,10 +32,10 @@ export namespace Docker {
     const dockerFileContent = fs.readFileSync(dockerFile, 'utf8');
 
     const dockerFileContentArray = dockerFileContent.split('\n');
-    let entrypointIndex = dockerFileContentArray.findIndex(line => line.startsWith('ENTRYPOINT'));
+    let entrypointIndex = dockerFileContentArray.findIndex((line) => line.startsWith('ENTRYPOINT'));
 
     if (entrypointIndex === -1) {
-      return
+      return;
     }
 
     dockerFileContentArray.splice(entrypointIndex, 0, 'RUN curl -SsL https://github.com/boxboat/fixuid/releases/download/v0.5.1/fixuid-0.5.1-linux-amd64.tar.gz | tar -C /usr/local/bin -xzf - \\');
@@ -35,11 +45,29 @@ export namespace Docker {
     dockerFileContentArray.splice(entrypointIndex + 4, 0, 'COPY fixuid.yml /etc/fixuid/config.yml');
     dockerFileContentArray.splice(entrypointIndex + 5, 0, '');
 
-    entrypointIndex = dockerFileContentArray.findIndex(line => line.startsWith('ENTRYPOINT'));
+    entrypointIndex = dockerFileContentArray.findIndex((line) => line.startsWith('ENTRYPOINT'));
     const entryPointText = dockerFileContentArray[entrypointIndex].replace('ENTRYPOINT [', '').replace(']', '');
 
     dockerFileContentArray[entrypointIndex] = `ENTRYPOINT ["fixuid", "-q", ${entryPointText}]`;
 
     fs.writeFileSync(dockerFile, dockerFileContentArray.join('\n'));
+  }
+
+  export async function listAllContainers(): Promise<void> {
+    console.log((await getInstance().container.list())[0]);
+  }
+
+  export async function cleanup(): Promise<void> {
+    const imagesResult = await getInstance().image.prune({ dangling: true });
+    if(typeof imagesResult === 'object'){
+      // @ts-ignore
+      Logger.success(`[docker] cleanup: removed ${(imagesResult.ImagesDeleted ?? []).length} images, retrieved ${NumberUtils.getReadableSizeString(imagesResult.SpaceReclaimed)}`);
+    }
+
+    const volumesResult = await getInstance().volume.prune({ dangling: true });
+    if(typeof volumesResult === 'object'){
+      // @ts-ignore
+      Logger.success(`[docker] cleanup: removed ${(volumesResult.VolumesDeleted ?? []).length} volumes, retrieved ${NumberUtils.getReadableSizeString(volumesResult.SpaceReclaimed)}`);
+    }
   }
 }
