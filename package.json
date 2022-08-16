@@ -8,10 +8,11 @@
   "scripts": {
     "build": "npx tsc",
     "build:watch": "npx tsc --watch",
-    "package": "npm run build && pkg . --public-packages '*' --output pkg/pt",
+    "build-watch": "npx tsc --watch",
+    "package": "pnpm run build && pkg . --public-packages '*' --output pkg/pt",
     "lint": "prettier --c ./src/**/*.ts",
     "prettify": "prettier --write ./src/**/*.ts",
-    "install": "npm run package && cp pkg/pt-linux /usr/local/bin/pt"
+    "pkg-instal": "npm run package && cp pkg/pt-linux /usr/local/bin/pt"
   },
   "bin": {
     "pt": "./build/index.js",
@@ -23,7 +24,9 @@
     "js-yaml": "^4.1.0",
     "lodash": "^4.17.21",
     "node-docker-api": "^1.1.22",
+    "semver": "^7.3.7",
     "simple-git": "^3.4.0",
+    "table": "^6.8.0",
     "yargs": "^17.4.0"
   },
   "devDependencies": {
@@ -31,6 +34,7 @@
     "@types/js-yaml": "^4.0.5",
     "@types/lodash": "^4.14.180",
     "@types/node": "^17.0.23",
+    "@types/semver": "^7.3.10",
     "@types/yargs": "^17.0.10",
     "cmake-js": "^6.3.0",
     "pkg": "^5.5.2",

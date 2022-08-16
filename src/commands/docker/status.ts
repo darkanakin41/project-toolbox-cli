@@ -13,7 +13,6 @@ export const handler = async (): Promise<void> => {
     Logger.success(`[docker] ${projectName}: dockerized`);
   } else {
     Logger.error(`[docker] ${projectName}: not dockerized`);
-    return
+    return;
   }
-
 };

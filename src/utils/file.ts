@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import path from 'path';
+import path, { join } from 'path';
 import { ConfigManager } from './config';
 import { Logger } from './logger';
 
@@ -19,6 +19,38 @@ export namespace File {
       }
     });
     return isExcluded;
+  }
+
+  export async function dirSize(directory: string): Promise<number> {
+    const files = fs.readdirSync(directory);
+
+    const paths = files.map(async (file) => {
+      const path = join(directory, file);
+      const stat = fs.statSync(path);
+      if (stat.isDirectory()) return await dirSize(path);
+
+      if (stat.isFile()) {
+        const { size } = fs.statSync(path);
+
+        return size;
+      }
+
+      return 0;
+    });
+
+    return (await Promise.all(paths)).flat(Infinity).reduce((i, size) => i + size, 0);
+  }
+
+  export function sizeToHumanReadable(size: number, decimals: number = 2): string {
+    if (size === 0) return '0  B';
+
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+
+    const i = Math.floor(Math.log(size) / Math.log(k));
+
+    return parseFloat((size / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
   }
 
   export function findAllFiles(dir: string, pattern: string | RegExp): string[] {
@@ -72,8 +104,8 @@ export namespace File {
         const stat = fs.statSync(file);
         return !stat.isDirectory() && regex.test(path.basename(file)) && !isExcludedPattern(path.basename(file), excludedPatterns);
       });
-    }catch(error){
-      return []
+    } catch (error) {
+      return [];
     }
   }
 }

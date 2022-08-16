@@ -59,13 +59,13 @@ export namespace DockerUtils {
 
   export async function cleanup(): Promise<void> {
     const imagesResult = await getInstance().image.prune({ dangling: true });
-    if(typeof imagesResult === 'object'){
+    if (typeof imagesResult === 'object') {
       // @ts-ignore
       Logger.success(`[docker] cleanup: removed ${(imagesResult.ImagesDeleted ?? []).length} images, retrieved ${NumberUtils.getReadableSizeString(imagesResult.SpaceReclaimed)}`);
     }
 
     const volumesResult = await getInstance().volume.prune({ dangling: true });
-    if(typeof volumesResult === 'object'){
+    if (typeof volumesResult === 'object') {
       // @ts-ignore
       Logger.success(`[docker] cleanup: removed ${(volumesResult.VolumesDeleted ?? []).length} volumes, retrieved ${NumberUtils.getReadableSizeString(volumesResult.SpaceReclaimed)}`);
     }

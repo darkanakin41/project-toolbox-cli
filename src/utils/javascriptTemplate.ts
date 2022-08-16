@@ -83,7 +83,7 @@ class JavascriptTemplateTools {
     this.composeHandleNetworks(composeConfiguration);
     this.composeHandleVolumes(composeConfiguration);
 
-    this.handleGlobalBinaries(composeConfiguration)
+    this.handleGlobalBinaries(composeConfiguration);
 
     return composeConfiguration;
   }
@@ -142,8 +142,8 @@ class JavascriptTemplateTools {
       };
     }
 
-    if(service.buildArgs) {
-      service.build.args = service.buildArgs
+    if (service.buildArgs) {
+      service.build.args = service.buildArgs;
       delete service['buildArgs'];
     }
 
@@ -169,8 +169,8 @@ class JavascriptTemplateTools {
     }
 
     Object.keys(composeConfiguration.binaries).forEach((binaryName: string) => {
-      if(!composeConfiguration.binaries){
-        return
+      if (!composeConfiguration.binaries) {
+        return;
       }
       const binaryParts = [composeConfiguration.binaries[binaryName], '"$@"'];
       BinaryManager.registerBinary(binaryName, binaryParts.join(' '));
@@ -254,13 +254,13 @@ class JavascriptTemplateTools {
         this.composeHandleTraefikVirtualHost(service);
         break;
     }
-    if(!service.networks){
-      service.networks = ['default']
+    if (!service.networks) {
+      service.networks = ['default'];
     }
-    if(!service.networks.includes('default')){
+    if (!service.networks.includes('default')) {
       service.networks.push('default');
     }
-    if(!service.networks.includes(this.data.reverseProxy.network)){
+    if (!service.networks.includes(this.data.reverseProxy.network)) {
       service.networks.push(this.data.reverseProxy.network);
     }
 

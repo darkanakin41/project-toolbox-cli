@@ -44,7 +44,7 @@ export const handler = async (): Promise<void> => {
   dockerFiles.forEach((file: string) => {
     const workingFolder = path.dirname(file);
     const fixuidConfig = path.join(workingFolder, 'fixuid.yml');
-    if(fs.existsSync(fixuidConfig)){
+    if (fs.existsSync(fixuidConfig)) {
       Logger.info(`[templates] Applying fixuid to "${file.replace(data.project.root + '/', '')}"`);
       DockerUtils.applyFixuid(workingFolder);
     }
