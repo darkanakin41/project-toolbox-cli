@@ -8,10 +8,11 @@ import { ObjectTools } from './object';
 import { Git } from './git';
 import { ConfigManager } from './config';
 import path from 'path';
+import { Logger } from './logger';
 
 class JavascriptTemplateTools {
   private data: Configuration;
-  private needsReverseProxy: boolean = false;
+  private needsReverseProxy = false;
   private ports: number[] = [];
 
   constructor(data: Configuration) {
@@ -108,7 +109,7 @@ class JavascriptTemplateTools {
   }
 
   composeAddInit(service: DockerComposeService): void {
-    if (service.init) {
+    if (service.init !== undefined) {
       return;
     }
 
@@ -272,7 +273,7 @@ class JavascriptTemplateTools {
       return;
     }
     this.needsReverseProxy = true;
-    let labels: DockerComposeLabels = service.labels ?? {
+    const labels: DockerComposeLabels = service.labels ?? {
       'traefik.enable': true,
     };
 
@@ -366,15 +367,15 @@ class JavascriptTemplateTools {
     }
   }
 }
-export module JavascriptTemplate {
-  export function process(template: string, data: Configuration): string {
+export class JavascriptTemplate {
+  static process(template: string, data: Configuration): string {
     // noinspection JSUnusedLocalSymbols
     const JST = new JavascriptTemplateTools(data);
     const result = eval(template);
     return yaml.dump(JST.compose(result), jsYamlConfiguration);
   }
 
-  export function getBinaries(template: string, data: Configuration): { [key: string]: DockerComposeBinary } {
+  static getBinaries(template: string, data: Configuration): { [key: string]: DockerComposeBinary } {
     // noinspection JSUnusedLocalSymbols
     const JST = new JavascriptTemplateTools(data);
     const result: DockerCompose = eval(template);

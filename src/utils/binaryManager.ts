@@ -7,14 +7,12 @@ import { JavascriptTemplate } from './javascriptTemplate';
 import { Logger } from './logger';
 import { DockerComposeBinary } from '../model/DockerCompose';
 
-export module BinaryManager {
-  import getProjectRoot = ConfigManager.getProjectRoot;
-
-  function getDirectory(): string {
-    return path.join(getProjectRoot(), ConfigManager.getConfiguration().binary.directory);
+export class BinaryManager {
+  private static getDirectory(): string {
+    return path.join(ConfigManager.getProjectRoot(), ConfigManager.getConfiguration().binary.directory);
   }
 
-  function composeBuildBinary(binaryConfig: DockerComposeBinary): string {
+  private static composeBuildBinary(binaryConfig: DockerComposeBinary): string {
     if (!binaryConfig.serviceName) {
       Logger.error('Service name missing on binary', true);
       return '';
@@ -38,12 +36,12 @@ export module BinaryManager {
     return binaryParts.join(' ');
   }
 
-  export function registerBinary(name: string, binary: string): void {
-    const binaryDirectory = getDirectory();
+  static registerBinary(name: string, binary: string): void {
+    const binaryDirectory = this.getDirectory();
     if (!fs.existsSync(binaryDirectory)) {
       fs.mkdirSync(binaryDirectory);
     }
-    Git.addToGitignore(getProjectRoot(), '/' + ConfigManager.getConfiguration().binary.directory);
+    Git.addToGitignore(ConfigManager.getProjectRoot(), '/' + ConfigManager.getConfiguration().binary.directory);
 
     const binaryPath = path.join(binaryDirectory, name);
 
@@ -54,7 +52,7 @@ export module BinaryManager {
     fs.writeFileSync(binaryPath, fileElements.join('\n'), { mode: 0o755 });
   }
 
-  export function retrieveBinary(name: string): string {
+  static retrieveBinary(name: string): string {
     const data = ConfigManager.getConfiguration();
     const jstFiles: string[] = File.findAllFilesRecursive(data.project.root, /(.*)\.jst(.*)?/);
 
@@ -70,6 +68,6 @@ export module BinaryManager {
       return '';
     }
 
-    return composeBuildBinary(binaries[name]);
+    return this.composeBuildBinary(binaries[name]);
   }
 }

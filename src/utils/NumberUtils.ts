@@ -1,7 +1,7 @@
-export namespace NumberUtils {
-  export function getReadableSizeString(size: number): string {
+export class NumberUtils {
+  static getReadableSizeString(size: number): string {
     let i = -1;
-    let byteUnits = [' kb', ' Mb', ' Gb', ' Tb', 'Pb', 'Eb', 'Zb', 'Yb'];
+    const byteUnits = [' kb', ' Mb', ' Gb', ' Tb', 'Pb', 'Eb', 'Zb', 'Yb'];
     do {
       size = size / 1024;
       i++;

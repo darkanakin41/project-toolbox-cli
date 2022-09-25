@@ -1,10 +1,10 @@
-import simpleGit from 'simple-git';
 import fs from 'fs';
 import path from 'path';
+import simpleGit from 'simple-git';
 import { Logger } from './logger';
 
-export namespace Git {
-  const toReplace: { [key: string]: string } = {
+export class Git {
+  static toReplace: { [key: string]: string } = {
     '.git': '',
     'git@github.com:': 'https://github.com/',
     '\n': '',
@@ -12,7 +12,7 @@ export namespace Git {
     '\t': '',
   };
 
-  function cleanFileName(file: string): string {
+  private static cleanFileName(file: string): string {
     file = file.replace(/\\/g, '/');
     file = file.replace(/\[/g, '\\[');
     file = file.replace(/]/g, '\\]');
@@ -20,30 +20,30 @@ export namespace Git {
     return file;
   }
 
-  export const getRemoteType = (remote: string): string | null => {
+  static getRemoteType(remote: string): string | null {
     if (remote.indexOf('github.com') > -1) {
       return 'github';
     }
     return null;
-  };
+  }
 
-  export const getCurrentBranch = async (workdir: string): Promise<string> => {
+  static async getCurrentBranch(workdir: string): Promise<string> {
     const git = simpleGit(workdir);
 
     const branches = await git.branch();
 
     return branches.current;
-  };
+  }
 
-  export const getPublicUrl = async (workdir: string): Promise<string> => {
+  static async getPublicUrl(workdir: string): Promise<string> {
     const git = simpleGit(workdir);
 
     let urls = await git.listRemote(['--get-url']);
 
     if (Array.isArray(urls)) {
       const urlsFormatted = urls.map((url) => {
-        Object.keys(toReplace).forEach((key) => {
-          url = url.replace(key, toReplace[key]);
+        Object.keys(this.toReplace).forEach((key) => {
+          url = url.replace(key, this.toReplace[key]);
         });
         return url;
       });
@@ -51,57 +51,55 @@ export namespace Git {
       return urlsFormatted[0];
     }
 
-    Object.keys(toReplace).forEach((key) => {
-      urls = urls.replace(key, toReplace[key]);
+    Object.keys(this.toReplace).forEach((key) => {
+      urls = urls.replace(key, this.toReplace[key]);
     });
 
     return urls;
-  };
+  }
 
-  export const getPullRequestCreateUrl = async (workdir: string): Promise<string | null> => {
-    const baseUrl = await getPublicUrl(workdir);
+  static async getPullRequestCreateUrl(workdir: string): Promise<string | null> {
+    const baseUrl = await this.getPublicUrl(workdir);
 
-    const source = await getCurrentBranch(workdir);
+    const source = await this.getCurrentBranch(workdir);
 
     let target = 'dev';
     if (source === 'dev') {
       target = 'main';
     }
 
-    switch (getRemoteType(baseUrl)) {
+    switch (this.getRemoteType(baseUrl)) {
       case 'github':
         return `${baseUrl}/compare/${target}...${source}`;
       default:
         return null;
     }
-  };
+  }
 
-  export const getPullRequestListUrl = async (workdir: string): Promise<string | null> => {
-    const baseUrl = await getPublicUrl(workdir);
+  static async getPullRequestListUrl(workdir: string): Promise<string | null> {
+    const baseUrl = await this.getPublicUrl(workdir);
 
-    switch (getRemoteType(baseUrl)) {
+    switch (this.getRemoteType(baseUrl)) {
       case 'github':
         return `${baseUrl}/pulls`;
       default:
         return null;
     }
-  };
+  }
 
-  export const isFileIgnored = (workdir: string, file: string): boolean => {
+  static isFileIgnored(workdir: string, file: string): boolean {
     if (!fs.existsSync(path.join(workdir, '.gitignore'))) {
       fs.writeFileSync(path.join(workdir, '.gitignore'), '');
       Logger.info('[gitignore] Created .gitignore file');
     }
-    file = cleanFileName(file);
+    file = this.cleanFileName(file);
     const fileContent = fs.readFileSync(path.join(workdir, '.gitignore'), 'utf8');
     return fileContent.split('\n').indexOf(file) !== -1;
-  };
+  }
 
-  export const addToGitignore = (workdir: string, file: string): void => {
-    file = cleanFileName(file);
-    if (file.indexOf('.') === 0) {
-    }
-    if (isFileIgnored(workdir, file)) {
+  static addToGitignore(workdir: string, file: string): void {
+    file = this.cleanFileName(file);
+    if (this.isFileIgnored(workdir, file)) {
       return;
     }
     const fileContent = fs.readFileSync(path.join(workdir, '.gitignore'), 'utf8');
@@ -110,5 +108,5 @@ export namespace Git {
     fs.writeFileSync(path.join(workdir, '.gitignore'), rows.join('\n'));
 
     Logger.success(`[gitignore] Added ${file} to .gitignore`);
-  };
+  }
 }

@@ -1,29 +1,29 @@
-export module Logger {
-  let verbose = false;
+export class Logger {
+  private static verbose = false;
 
-  export function setVerbose(value: boolean) {
-    verbose = value;
+  static setVerbose(value: boolean) {
+    this.verbose = value;
   }
 
-  export function debug(message: string) {
-    if (verbose) {
+  static debug(message: string) {
+    if (this.verbose) {
       console.log(message);
     }
   }
 
-  export function info(message: string): void {
+  static info(message: string): void {
     console.info(message);
   }
 
-  export function success(message: string): void {
+  static success(message: string): void {
     console.log(message);
   }
 
-  export function warn(message: string): void {
+  static warn(message: string): void {
     console.warn(message);
   }
 
-  export function error(message: string, quit: boolean = false): void {
+  static error(message: string, quit = false): void {
     console.error(message);
     if (quit) {
       process.exit(1);

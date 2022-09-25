@@ -1,7 +1,7 @@
 import { ConfigManager } from '../utils/config';
 
-export const command: string = 'install';
-export const desc: string = 'Install the cli properly';
+export const command = 'install';
+export const desc = 'Install the cli properly';
 export const builder = {};
 export const handler = async (): Promise<void> => {
   if (!ConfigManager.isProjectToolboxFolder(process.env.PWD) && ConfigManager.isProjectToolboxEnabled(process.env.OLDPWD)) {

@@ -1,9 +1,10 @@
-export namespace ObjectTools {
-  export interface AnObject {
-    [key: string]: string | object | null | number | AnObject;
-  }
-  export function flatten(obj: AnObject): { [key: string]: string | null } {
-    let result: { [key: string]: string | null } = {};
+export interface AnObject {
+  [key: string]: string | object | null | number | AnObject | boolean;
+}
+
+export class ObjectTools {
+  static flatten(obj: AnObject): { [key: string]: string | null } {
+    const result: { [key: string]: string | null } = {};
 
     Object.keys(obj).forEach((field) => {
       const value = obj[field];

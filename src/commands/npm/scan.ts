@@ -1,4 +1,4 @@
-import { exec, execSync } from 'child_process';
+import { execSync } from 'child_process';
 import path from 'path';
 import { SemVer } from 'semver';
 import { Options } from 'simple-git';
@@ -6,7 +6,7 @@ import { table, TableUserConfig } from 'table';
 import { Arguments, CommandBuilder } from 'yargs';
 import { File } from '../../utils/file';
 import { Logger } from '../../utils/logger';
-import { Npm } from '../../utils/Npm';
+import { Npm, NpmPackage } from '../../utils/Npm';
 
 interface Package {
   name: string;
@@ -15,8 +15,8 @@ interface Package {
   usedIn: string[];
 }
 
-export const command: string = 'scan';
-export const desc: string = 'Scan package.json to retrieve all dependencies and versions';
+export const command = 'scan';
+export const desc = 'Scan package.json to retrieve all dependencies and versions';
 export const builder: CommandBuilder<Options, Options> = (yargs) => {
   return yargs.positional('onlyUnificationNeeded', { type: 'boolean', required: false }).positional('apply', { type: 'boolean', required: false }).positional('updateProject', { type: 'string', required: false });
 };
@@ -43,9 +43,9 @@ export const handler = async (argv: Arguments<Options>): Promise<void> => {
     return thePackage;
   }
 
-  function processDependencies(packages: Npm.NpmPackage[], workingDirectory: string): void {
-    packages.forEach((dependency: Npm.NpmPackage) => {
-      let p = getPackage(dependency.name);
+  function processDependencies(packages: NpmPackage[], workingDirectory: string): void {
+    packages.forEach((dependency: NpmPackage) => {
+      const p = getPackage(dependency.name);
       const semver = new SemVer(dependency.version.replace('^', ''));
       if (semver.compare(p.minVersion.replace('^', '')) === -1) {
         p.minVersion = dependency.version;

@@ -5,8 +5,8 @@ import { Logger } from './logger';
 
 const excluded: (string | RegExp)[] = ['node_modules', 'vendor', 'var', 'bundles', /\.idea/, /\.github/, /\.git/, 'cache', '.vscode', /\.docker-data/];
 
-export namespace File {
-  function isExcludedPattern(toCheck: string, excludedPatterns: (string | RegExp)[]): boolean {
+export class File {
+  private static isExcludedPattern(toCheck: string, excludedPatterns: (string | RegExp)[]): boolean {
     if (excludedPatterns.length === 0) {
       return false;
     }
@@ -21,13 +21,13 @@ export namespace File {
     return isExcluded;
   }
 
-  export async function dirSize(directory: string): Promise<number> {
+  static async dirSize(directory: string): Promise<number> {
     const files = fs.readdirSync(directory);
 
     const paths = files.map(async (file) => {
       const path = join(directory, file);
       const stat = fs.statSync(path);
-      if (stat.isDirectory()) return await dirSize(path);
+      if (stat.isDirectory()) return await this.dirSize(path);
 
       if (stat.isFile()) {
         const { size } = fs.statSync(path);
@@ -41,7 +41,7 @@ export namespace File {
     return (await Promise.all(paths)).flat(Infinity).reduce((i, size) => i + size, 0);
   }
 
-  export function sizeToHumanReadable(size: number, decimals: number = 2): string {
+  static sizeToHumanReadable(size: number, decimals = 2): string {
     if (size === 0) return '0  B';
 
     const k = 1024;
@@ -53,7 +53,7 @@ export namespace File {
     return parseFloat((size / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
   }
 
-  export function findAllFiles(dir: string, pattern: string | RegExp): string[] {
+  static findAllFiles(dir: string, pattern: string | RegExp): string[] {
     if (!fs.existsSync(dir)) {
       return [];
     }
@@ -75,7 +75,7 @@ export namespace File {
     });
   }
 
-  export function findAllFilesRecursive(dir: string, pattern: string | RegExp, excludedPatterns: string[] = []): string[] {
+  static findAllFilesRecursive(dir: string, pattern: string | RegExp, excludedPatterns: string[] = []): string[] {
     Logger.debug(`Searching for files matching "${pattern} in ${dir} (recursive)`);
     const excludedFolders = [...excluded, ...ConfigManager.getConfiguration().files.ignoredFolders];
     try {
@@ -88,21 +88,21 @@ export namespace File {
       files.forEach((file: string) => {
         const stat = fs.statSync(file);
         if (stat.isDirectory()) {
-          if (!isExcludedPattern(file, excludedFolders)) {
+          if (!this.isExcludedPattern(file, excludedFolders)) {
             subfolders.push(file);
           }
         }
       });
 
       subfolders.forEach((subfolder: string) => {
-        const subfiles = findAllFilesRecursive(subfolder, pattern);
+        const subfiles = this.findAllFilesRecursive(subfolder, pattern);
         files.push(...subfiles);
       });
 
       const regex = new RegExp(pattern);
       return files.filter((file) => {
         const stat = fs.statSync(file);
-        return !stat.isDirectory() && regex.test(path.basename(file)) && !isExcludedPattern(path.basename(file), excludedPatterns);
+        return !stat.isDirectory() && regex.test(path.basename(file)) && !this.isExcludedPattern(path.basename(file), excludedPatterns);
       });
     } catch (error) {
       return [];

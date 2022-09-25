@@ -8,8 +8,8 @@ import { Logger } from '../../utils/logger';
 import path from 'path';
 import { DockerUtils } from '../../utils/dockerUtils';
 
-export const command: string = 'generate';
-export const desc: string = 'Get the current ddb configuration';
+export const command = 'generate';
+export const desc = 'Get the current ddb configuration';
 export const builder = {};
 export const handler = async (): Promise<void> => {
   const data = ConfigManager.getConfiguration();

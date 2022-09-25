@@ -2,10 +2,9 @@ import { existsSync } from 'fs';
 import path from 'path';
 import { File } from '../../utils/file';
 import { table, TableUserConfig } from 'table';
-import { Logger } from '../../utils/logger';
 
-export const command: string = 'scan';
-export const desc: string = 'Scan node project in current folder';
+export const command = 'scan';
+export const desc = 'Scan node project in current folder';
 export const builder = {};
 export const handler = async (): Promise<void> => {
   let files = File.findAllFilesRecursive(process.cwd(), 'package.json');

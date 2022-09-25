@@ -1,8 +1,8 @@
 import { Arguments, CommandBuilder, Options } from 'yargs';
 import { BinaryManager } from '../../utils/binaryManager';
 
-export const command: string = 'get <binaryName>';
-export const desc: string = 'Get binary';
+export const command = 'get <binaryName>';
+export const desc = 'Get binary';
 export const builder: CommandBuilder<Options, Options> = (yargs) => {
   return yargs.positional('binaryName', { type: 'string', required: true });
 };

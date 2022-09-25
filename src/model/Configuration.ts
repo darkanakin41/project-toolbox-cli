@@ -1,6 +1,6 @@
-import { ObjectTools } from '../utils/object';
+import { AnObject } from '../utils/object';
 
-export default interface Configuration extends ObjectTools.AnObject {
+export default interface Configuration extends AnObject {
   binary: BinaryConfiguration;
   compose: ComposeConfiguration;
   data: { [key: string]: string | number };
@@ -12,16 +12,16 @@ export default interface Configuration extends ObjectTools.AnObject {
   reverseProxy: ReverseProxyConfiguration;
 }
 
-export interface BinaryConfiguration {
+export interface BinaryConfiguration extends AnObject {
   directory: '.bin';
 }
 
-export interface ComposeConfiguration {
+export interface ComposeConfiguration extends AnObject {
   network_name: string;
   version: string;
 }
 
-export interface DockerConfiguration {
+export interface DockerConfiguration extends AnObject {
   port_prefix: number | null;
   restart: 'no' | 'unless-stopped' | 'always';
   init: boolean;
@@ -29,25 +29,25 @@ export interface DockerConfiguration {
   build: DockerBuildConfiguration;
 }
 
-export interface DockerBuildConfiguration {
+export interface DockerBuildConfiguration extends AnObject {
   baseDirectory: string;
 }
 
-export interface DockerUserConfiguration {
+export interface DockerUserConfiguration extends AnObject {
   uid: number;
   gid: number;
 }
 
-export interface EnvConfiguration {
+export interface EnvConfiguration extends AnObject {
   current: string;
 }
 
-export interface ProjectConfiguration {
+export interface ProjectConfiguration extends AnObject {
   name: string;
   root: string;
 }
 
-export interface ReverseProxyConfiguration {
+export interface ReverseProxyConfiguration extends AnObject {
   enabled: boolean;
   type: 'traefik';
   network: string;
@@ -58,16 +58,16 @@ export interface ReverseProxyConfiguration {
   privateDomain: ReverseProxyDomainConfiguration;
 }
 
-export interface ReverseProxyDomainConfiguration {
+export interface ReverseProxyDomainConfiguration extends AnObject {
   sub: string;
   ext: string;
 }
 
-export interface FilesConfiguration {
+export interface FilesConfiguration extends AnObject {
   ignoredFolders: string[];
 }
 
-export interface HostConfiguration {
+export interface HostConfiguration extends AnObject {
   nics: string[];
   ips: string[];
 }

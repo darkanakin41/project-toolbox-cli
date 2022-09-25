@@ -4,17 +4,17 @@ import path from 'path';
 import { Logger } from './logger';
 import { NumberUtils } from './NumberUtils';
 
-export namespace DockerUtils {
-  let instance: Docker | undefined;
-  function getInstance(): Docker {
-    if (!instance) {
-      instance = new Docker({ socketPath: '/var/run/docker.sock' });
+export class DockerUtils {
+  static instance: Docker | undefined;
+  private static getInstance(): Docker {
+    if (!this.instance) {
+      this.instance = new Docker({ socketPath: '/var/run/docker.sock' });
     }
-    return instance;
+    return this.instance;
   }
-  export function isDockerized(workdir: string): boolean {
-    let dockerFolder = path.join(workdir, '.docker');
-    let dockerCompose = path.join(workdir, 'docker-compose.yml');
+  static isDockerized(workdir: string): boolean {
+    const dockerFolder = path.join(workdir, '.docker');
+    const dockerCompose = path.join(workdir, 'docker-compose.yml');
 
     if (fs.existsSync(dockerFolder)) {
       return true;
@@ -22,7 +22,7 @@ export namespace DockerUtils {
     return fs.existsSync(dockerCompose);
   }
 
-  export function applyFixuid(workdir: string): void {
+  static applyFixuid(workdir: string): void {
     const dockerFile = path.join(workdir, 'Dockerfile');
 
     if (!fs.existsSync(dockerFile)) {
@@ -53,18 +53,18 @@ export namespace DockerUtils {
     fs.writeFileSync(dockerFile, dockerFileContentArray.join('\n'));
   }
 
-  export async function listAllContainers(): Promise<void> {
-    console.log((await getInstance().container.list())[0]);
+  static async listAllContainers(): Promise<void> {
+    console.log((await this.getInstance().container.list())[0]);
   }
 
-  export async function cleanup(): Promise<void> {
-    const imagesResult = await getInstance().image.prune({ dangling: true });
+  static async cleanup(): Promise<void> {
+    const imagesResult = await this.getInstance().image.prune({ dangling: true });
     if (typeof imagesResult === 'object') {
       // @ts-ignore
       Logger.success(`[docker] cleanup: removed ${(imagesResult.ImagesDeleted ?? []).length} images, retrieved ${NumberUtils.getReadableSizeString(imagesResult.SpaceReclaimed)}`);
     }
 
-    const volumesResult = await getInstance().volume.prune({ dangling: true });
+    const volumesResult = await this.getInstance().volume.prune({ dangling: true });
     if (typeof volumesResult === 'object') {
       // @ts-ignore
       Logger.success(`[docker] cleanup: removed ${(volumesResult.VolumesDeleted ?? []).length} volumes, retrieved ${NumberUtils.getReadableSizeString(volumesResult.SpaceReclaimed)}`);

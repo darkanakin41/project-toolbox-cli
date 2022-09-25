@@ -7,11 +7,11 @@ import Configuration from '../model/Configuration';
 import { File } from './file';
 import { Logger } from './logger';
 
-export module ConfigManager {
-  const userInfo = os.userInfo();
+export class ConfigManager {
+  static userInfo = os.userInfo();
 
-  let calculatedConfiguration: Configuration | null = null;
-  const defaultConfig: Configuration = {
+  static calculatedConfiguration: Configuration | null = null;
+  static defaultConfig: Configuration = {
     binary: {
       directory: '.bin',
     },
@@ -24,8 +24,8 @@ export module ConfigManager {
       restart: 'no',
       init: true,
       user: {
-        uid: userInfo.uid,
-        gid: userInfo.gid,
+        uid: this.userInfo.uid,
+        gid: this.userInfo.gid,
       },
       build: {
         baseDirectory: '.docker',
@@ -64,7 +64,7 @@ export module ConfigManager {
     data: {},
   };
 
-  function loadConfigurationFile(file: string, configuration: object) {
+  private static loadConfigurationFile(file: string, configuration: object) {
     if (!fs.existsSync(file)) {
       return;
     }
@@ -73,7 +73,7 @@ export module ConfigManager {
     _.merge(configuration, yamlContent);
   }
 
-  function updateHostConfiguration(configuration: Configuration): void {
+  private static updateHostConfiguration(configuration: Configuration): void {
     const interfaces: NodeJS.Dict<NetworkInterfaceInfo[]> = networkInterfaces();
     Object.keys(interfaces).forEach((interfaceName) => {
       if (interfaceName.indexOf('veth') === -1 && interfaceName.indexOf('br-') === -1 && interfaceName.indexOf('lo') === -1) {
@@ -89,7 +89,7 @@ export module ConfigManager {
     });
   }
 
-  export const getProjectRoot = (folder?: string | null): string => {
+  static getProjectRoot(folder?: string | null): string {
     if (!folder) {
       folder = process.cwd();
     }
@@ -105,9 +105,9 @@ export module ConfigManager {
     }
     Logger.error(`project-toolbox not configured, please create a pt.yaml at root folder of your project`, true);
     return '';
-  };
+  }
 
-  export const isProjectToolboxFolder = (folder?: string | null): boolean => {
+  static isProjectToolboxFolder(folder?: string | null): boolean {
     if (!folder) {
       folder = process.cwd();
     }
@@ -122,77 +122,77 @@ export module ConfigManager {
       }
     }
     return false;
-  };
+  }
 
-  export const projectToolboxBinPath = (folder?: string | null): string | null => {
-    if (!isProjectToolboxFolder(folder)) {
+  static projectToolboxBinPath(folder?: string | null): string | null {
+    if (!this.isProjectToolboxFolder(folder)) {
       return null;
     }
 
-    return path.join(getProjectRoot(folder), '.bin');
-  };
+    return path.join(this.getProjectRoot(folder), '.bin');
+  }
 
-  export const generateNewPath = (add: boolean = false, folder?: string | null): string | null => {
+  static generateNewPath(add = false, folder?: string | null): string | null {
     if (!process.env.PATH) {
       return null;
     }
 
     if (add) {
-      return `${projectToolboxBinPath(folder)}:${process.env.PATH}`;
+      return `${this.projectToolboxBinPath(folder)}:${process.env.PATH}`;
     }
 
-    return process.env.PATH.replace(projectToolboxBinPath(folder) + ':', '').replace(':' + projectToolboxBinPath(folder), '');
-  };
+    return process.env.PATH.replace(this.projectToolboxBinPath(folder) + ':', '').replace(':' + this.projectToolboxBinPath(folder), '');
+  }
 
-  export const isProjectToolboxEnabled = (folder?: string | null): boolean => {
-    if (!process.env.PATH || !isProjectToolboxFolder(folder)) {
+  static isProjectToolboxEnabled(folder?: string | null): boolean {
+    if (!process.env.PATH || !this.isProjectToolboxFolder(folder)) {
       return false;
     }
 
-    const binPath = projectToolboxBinPath(folder);
+    const binPath = this.projectToolboxBinPath(folder);
     if (!binPath) {
       return false;
     }
 
     return process.env.PATH?.includes(binPath);
-  };
+  }
 
-  export const getConfiguration = () => {
-    if (calculatedConfiguration !== null) {
-      return calculatedConfiguration;
+  static getConfiguration(): Configuration {
+    if (this.calculatedConfiguration !== null) {
+      return this.calculatedConfiguration;
     }
-    const configuration = _.cloneDeep(defaultConfig);
+    const configuration = _.cloneDeep(this.defaultConfig);
 
-    const home = File.findAllFiles(userInfo.homedir, '\\.pt\\.yaml')[0];
+    const home = File.findAllFiles(this.userInfo.homedir, '\\.pt\\.yaml')[0];
     if (home) {
       Logger.debug(`using "${home}" configuration file`);
-      loadConfigurationFile(home, configuration);
+      this.loadConfigurationFile(home, configuration);
     }
 
-    configuration.project.root = getProjectRoot();
+    configuration.project.root = this.getProjectRoot();
     configuration.project.name = path.parse(configuration.project.root).base;
     const main = File.findAllFiles(configuration.project.root, 'pt\\.yaml')[0];
     if (main) {
-      Logger.debug(`using "${main.replace(getProjectRoot(), '')}" configuration file`);
-      loadConfigurationFile(main, configuration);
+      Logger.debug(`using "${main.replace(this.getProjectRoot(), '')}" configuration file`);
+      this.loadConfigurationFile(main, configuration);
       configuration.reverseProxy.domain.sub = configuration.project.name.replace(/[^a-zA-Z0-9]/g, '-');
       configuration.reverseProxy.privateDomain.sub = configuration.project.name.replace(/[^a-zA-Z0-9]/g, '-');
     }
 
     const local = File.findAllFiles(configuration.project.root, 'pt\\.local\\.ya?ml')[0];
     if (local) {
-      Logger.debug(`using "${local.replace(getProjectRoot(), '')}" configuration file`);
-      loadConfigurationFile(local, configuration);
+      Logger.debug(`using "${local.replace(this.getProjectRoot(), '')}" configuration file`);
+      this.loadConfigurationFile(local, configuration);
     }
 
     const environment = File.findAllFiles(configuration.project.root, `pt\\.${configuration.env.current}\\.ya?ml`)[0];
     if (environment) {
-      Logger.debug(`using "${environment.replace(getProjectRoot(), '')}" configuration file`);
-      loadConfigurationFile(environment, configuration);
+      Logger.debug(`using "${environment.replace(this.getProjectRoot(), '')}" configuration file`);
+      this.loadConfigurationFile(environment, configuration);
     }
-    calculatedConfiguration = configuration;
+    this.calculatedConfiguration = configuration;
 
-    updateHostConfiguration(configuration);
+    this.updateHostConfiguration(configuration);
     return configuration;
-  };
+  }
 }

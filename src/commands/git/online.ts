@@ -2,8 +2,8 @@ import { Git } from '../../utils/git';
 import { ConfigManager } from '../../utils/config';
 import { Logger } from '../../utils/logger';
 
-export const command: string = 'online';
-export const desc: string = 'Open git repository in web browser';
+export const command = 'online';
+export const desc = 'Open git repository in web browser';
 export const builder = {};
 export const handler = async (): Promise<void> => {
   const data = ConfigManager.getConfiguration();

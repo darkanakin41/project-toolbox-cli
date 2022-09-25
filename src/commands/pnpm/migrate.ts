@@ -3,8 +3,8 @@ import { existsSync, readFileSync, rmSync, writeFileSync } from 'fs';
 import path from 'path';
 import { Logger } from '../../utils/logger';
 
-export const command: string = 'migrate';
-export const desc: string = 'Migrate from npm or yarn';
+export const command = 'migrate';
+export const desc = 'Migrate from npm or yarn';
 export const builder = {};
 export const handler = async (): Promise<void> => {
   if (!existsSync(path.join(process.cwd(), 'package-lock.json')) && !existsSync(path.join(process.cwd(), 'yarn.lock'))) {

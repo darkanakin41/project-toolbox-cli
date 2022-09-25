@@ -3,8 +3,8 @@ import { Git } from '../../utils/git';
 import { ConfigManager } from '../../utils/config';
 import { Logger } from '../../utils/logger';
 
-export const command: string = 'pull-request';
-export const desc: string = 'Open the pull request screen creation for the repository in web browser';
+export const command = 'pull-request';
+export const desc = 'Open the pull request screen creation for the repository in web browser';
 export const builder: CommandBuilder<Options, Options> = (yargs) => {
   return yargs.options({
     create: {
