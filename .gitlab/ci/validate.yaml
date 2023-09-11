@@ -1,0 +1,4 @@
+lint:
+  stage: validate
+  script:
+    - make lint

@@ -2,16 +2,6 @@ stages:
   - validate
   - build
 
-
-lint:
-  stage: validate
-  script:
-    - make lint
-
-build_package:
-  stage: build
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-  script:
-    - make package.ci
-    - make semantic-release
+include:
+  - '.gitlab/ci/validate.yaml'
+  - '.gitlab/ci/build.yaml'

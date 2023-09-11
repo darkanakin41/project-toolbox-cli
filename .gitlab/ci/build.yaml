@@ -1,0 +1,7 @@
+build_package:
+  stage: build
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  script:
+    - make package.ci
+    - make semantic-release
