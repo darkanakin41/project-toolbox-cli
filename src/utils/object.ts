@@ -12,7 +12,7 @@ export class ObjectTools {
         result[field] = value;
       } else if (typeof value === 'object' && !Array.isArray(value)) {
         // @ts-ignore
-        const temp = flatten(value);
+        const temp = this.flatten(value);
         for (const j in temp) {
           const tempValue = temp[j];
           result[field + '.' + j] = tempValue !== null ? tempValue.toString() : null;

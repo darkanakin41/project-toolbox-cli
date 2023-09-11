@@ -44,7 +44,7 @@ class JavascriptTemplateTools {
       return `${outputPort}:${port}`;
     }
     const portPrefix = this.data.docker.port_prefix;
-    let exposedPort: number = parseInt(`${portPrefix}${port.toString().substring(port.toString().length - 2)}`);
+    let exposedPort: number = parseInt(`${portPrefix}${port.toString().substring(port.toString().length - (5 - (portPrefix ?? 100).toString().length))}`);
     while (this.ports.includes(exposedPort)) {
       exposedPort++;
     }

@@ -1,0 +1,25 @@
+{
+  "branches": [
+    "main",
+    "dev"
+  ],
+  "plugins": [
+    "@semantic-release/commit-analyzer",
+    "@semantic-release/release-notes-generator",
+    [
+      "@semantic-release/gitlab",
+      {
+        "gitlabUrl": "https://gitlab-ce.rivendell.local.darkanakin41.com",
+        "assets": [
+          "pkg/*"
+        ]
+      }
+    ],
+    [
+      "@semantic-release/git",
+      {
+        "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+      }
+    ]
+  ]
+}

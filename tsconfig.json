@@ -9,13 +9,14 @@
     "outDir": "./build",
     "importHelpers": false,
     "allowJs": true,
+    "baseUrl": ".",
     "typeRoots": [
       "./node_modules/@types",
       "./types"
     ]
   },
   "include": [
-    "src/**/*", 
+    "src/**/*",
     "types/**/*"
   ]
 }
